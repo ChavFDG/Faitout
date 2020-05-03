@@ -1,0 +1,116 @@
+﻿@page "/tags"
+
+@inject Faitout.Services.UploadService UploadService
+@inject Faitout.Services.TagService TagService
+
+<h1>Tags</h1>
+
+<p>Si dessous la liste de tout les tags que vous gérez.</p>
+
+@if (tags == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <RadzenButton Click="@(e => { selectedTag = new Tag();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+        <EditForm Model="@selectedTag" OnValidSubmit="@Save">
+            <MatDialogContent>
+                <DataAnnotationsValidator />
+                <p>Nom</p>
+                <MatTextField @bind-Value="@selectedTag.Name"></MatTextField>
+                <ValidationMessage For="@(()=> selectedTag.Name)" />
+                <p>Description</p>
+                <MatTextField @bind-Value="@selectedTag.Description"></MatTextField>
+                <ValidationMessage For="@(()=> selectedTag.Description)" />
+                <p>Icon</p>
+                <UploadFileDisplay ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </MatDialogActions>
+        </EditForm>
+    </MatDialog>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                @*Picture*@
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var tag in tags.OrderBy(x => x.Name))
+            {
+            <tr>
+                <td><RadzenImage Path="@tag.Icon.GetFilePath()" Style="width:50px" /></td>
+                <td>@tag.Name</td>
+                <td>@tag.Description</td>
+                <td><MatButton OnClick="@(e => { selectedTag = tag;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(tag); })">Supprimer</MatButton></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    public List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+
+    private List<Tag> tags;
+
+    protected override void OnInitialized()
+    {
+        LoadTags();
+
+        dialogService.OnClose += Close;
+    }
+
+    void LoadTags()
+    {
+        tags = TagService.GetTags();
+        StateHasChanged();
+    }
+
+    Tag selectedTag = new Tag();
+    bool dialogIsOpen = false;
+
+    void Save()
+    {
+        if (SelectedImages.Count != 0)
+        {
+            if (!String.IsNullOrWhiteSpace(selectedTag.Icon))
+                UploadService.Remove(selectedTag.Icon);
+            selectedTag.Icon = SelectedImages.First().InternalFileName;
+
+        }
+        Toaster.NotifyResult(TagService.Save(selectedTag), selectedTag.ToString());
+        LoadTags();
+        dialogIsOpen = false;
+        SelectedImages.Clear();
+    }
+
+    void ConfirmDelete(Tag tag)
+    {
+        dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression du tag " + tag.ToString(), tag);
+    }
+
+    void Close(dynamic dialogResult)
+    {
+        Tag tag = dialogResult as Tag;
+        if (tag != null)
+        {
+            Toaster.NotifyResult(TagService.Delete(tag), tag.ToString());
+            LoadTags();
+            StateHasChanged();
+        }
+    }
+}

@@ -1,0 +1,29 @@
+﻿
+@*<p Style="margin-bottom: 10px;">@Message</p>
+<div class="row">
+    <div class="col-md-12">
+        <RadzenButton Text="Ok" Click="()=> DialogService.Close(Object)" />
+        <RadzenButton Text="Cancel" Click="()=> DialogService.Close(null)" ButtonStyle="ButtonStyle.Secondary" />
+    </div>
+</div>*@
+
+
+    <MatDialogContent>
+        <p>@Message</p>
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton OnClick="()=> DialogService.Close(null)">Annuler</MatButton>
+        <MatButton OnClick="()=> DialogService.Close(Object)">Confirmer</MatButton>
+    </MatDialogActions>
+
+@code {
+
+    [Parameter]
+    public string Message { get; set; }
+
+    [Parameter]
+    public DialogService DialogService { get; set; }
+
+    [Parameter]
+    public Object Object { get; set; }
+}

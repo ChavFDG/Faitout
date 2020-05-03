@@ -1,0 +1,179 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="Faitout.Model.BaseRawMaterial" Collapsed="true">
+    <Position X="5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAiAQACAAAAAAQgAAAAAACAAAAQAAAAhAA=</HashCode>
+      <FileName>Data\Model\BaseRawMaterial.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.CompanyConfiguration" Collapsed="true">
+    <Position X="6.75" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AACCCAAAgAAAAAAAgQAAAAAgAkAAAAAAAAAAAAAEAQA=</HashCode>
+      <FileName>Data\Model\CompanyConfiguration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Deposit" Collapsed="true">
+    <Position X="8.5" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAIQAgAAAAAAAAAAQAAAAAAAAAAAAAgAAAAAQ=</HashCode>
+      <FileName>Data\Model\Deposit.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.FtpConfiguration" Collapsed="true">
+    <Position X="10.25" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACAAAAAAAAAAAAAAAAAAAAAAAIAEAAAgAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\FtpConfiguration.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Ingredient" Collapsed="true">
+    <Position X="12" Y="3" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAABAABAAAAAgAAAAAAQAAAAAAAAAAAAAiAAAAAA=</HashCode>
+      <FileName>Data\Model\Ingredient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.IngredientTraceability" Collapsed="true">
+    <Position X="5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAIAQAAAAAEAAAAAAAAACAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\IngredientTraceability.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Order" Collapsed="true">
+    <Position X="8.5" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>ECELCAAEAABAAAAIAACAAAgAAACDQCQAAAAAIAAAAAA=</HashCode>
+      <FileName>Data\Model\Order.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.OrderItem" Collapsed="true">
+    <Position X="10.25" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAECAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAgAAAAAA=</HashCode>
+      <FileName>Data\Model\OrderItem.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Product" Collapsed="true">
+    <Position X="12" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAABAJRAgAAAAAAAAAAQAAAEAAEQQAAgAGAAgAgI=</HashCode>
+      <FileName>Data\Model\Product.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.ProductIngredientRawMaterial" Collapsed="true">
+    <Position X="5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAACBAAgAAAAAAAAAAAAAAAAAAAAAAAAAABAAAIAAAg=</HashCode>
+      <FileName>Data\Model\ProductIngredientRawMaterial.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Provider" Collapsed="true">
+    <Position X="6.75" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAACAgAAAAAAAAwAQAAACCAAACAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\Provider.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.RawMaterial" Collapsed="true">
+    <Position X="8.5" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAIBAEAAAABAAAAAAAAAACAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\RawMaterial.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Recipe" Collapsed="true">
+    <Position X="10.25" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAADAAAAIAAgAAAAAAAAACQAAAAAAAAAAAAAoAAAAAA=</HashCode>
+      <FileName>Data\Model\Recipe.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.RecipeTag" Collapsed="true">
+    <Position X="12" Y="5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAABAAAAgAAAAAAAAAAAAAAAAAAAAAAAACAAAAAE=</HashCode>
+      <FileName>Data\Model\RecipeTag.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.SubRawMaterialIngredient" Collapsed="true">
+    <Position X="5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAgAIAAAg=</HashCode>
+      <FileName>Data\Model\SubRawMaterialIngredient.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Tag" Collapsed="true">
+    <Position X="6.75" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAgAAAAAAAAAAQAAAAAAAAAAAAAIAEAAAA=</HashCode>
+      <FileName>Data\Model\Tag.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.TimeRange" Collapsed="true">
+    <Position X="8.5" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AgACAAAAAAAAAAAAAAAAAABAAAAIAAAAAAAAAAAJAAA=</HashCode>
+      <FileName>Data\Model\TimeRange.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.User" Collapsed="true">
+    <Position X="10.25" Y="6" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAEAAAAAAAAAAAAAAAAAAAQADAAACAQAAAAgAAABAAA=</HashCode>
+      <FileName>Data\Model\User.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.OpenedDay" Collapsed="true">
+    <Position X="6.75" Y="4" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>IAACAAAAIAAAAAAAAQAAAAAAAEBAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\OpenedDay.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.VAT" Collapsed="true">
+    <Position X="22.75" Y="11.75" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\VAT.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="Faitout.Data.Model.Category" Collapsed="true">
+    <Position X="18" Y="9.5" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAACAAAAAAAgAAAAAAAAQAQAAAAAAAAAAAAAABAAAAA=</HashCode>
+      <FileName>Data\Model\Category.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="Faitout.Data.Model.Unity" Collapsed="true">
+    <Position X="12" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAEAAAAAAAAAABAAAAAAAAAAAAAAAIBBAAAAAgAAA=</HashCode>
+      <FileName>Data\Model\Ingredient.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Faitout.Data.Model.OrderState" Collapsed="true">
+    <Position X="8.5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAAAAgAAAAAAAAQIAAAQAAAAAAAAAAAA=</HashCode>
+      <FileName>Data\Model\Order.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Faitout.Data.Model.OrderMode" Collapsed="true">
+    <Position X="6.75" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAg=</HashCode>
+      <FileName>Data\Model\Order.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="Faitout.Data.Model.OpenType" Collapsed="true">
+    <Position X="5" Y="7.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAACAAAAAAIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg=</HashCode>
+      <FileName>Data\Model\TimeRange.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

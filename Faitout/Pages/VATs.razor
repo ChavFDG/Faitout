@@ -1,0 +1,95 @@
+﻿@page "/tva"
+@inject Faitout.Services.VATService VATService
+
+<h1>TVA</h1>
+
+<p>Si dessous la liste de toute les TVA que vous gérez.</p>
+
+@if (taxes == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <RadzenButton Click="@(e => { selectedVat = new VAT();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+            <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+            <EditForm Model="@selectedVat" OnValidSubmit="@Save">
+                <MatDialogContent>
+                    <DataAnnotationsValidator />
+                    <p>Valeur de la TVA</p>
+                    <MatNumericUpDownField Step="0.01m" DecimalPlaces=2 Minimum="0" Maximum="100" FieldType="MatNumericUpDownFieldType.Percent" @bind-Value="@selectedVat.Tax"></MatNumericUpDownField>
+                </MatDialogContent>
+                <MatDialogActions>
+                    <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                    <MatButton Type="submit">Sauvegarder</MatButton>
+                </MatDialogActions>
+            </EditForm>
+        </MatDialog>
+
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Taux</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vat in taxes.OrderBy(x => x.Tax))
+            {
+            <tr>
+                <td>@vat.ToString()</td>
+                <td><MatButton OnClick="@(e => { selectedVat = vat;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(vat); })">Supprimer</MatButton></td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+
+
+    private List<VAT> taxes;
+
+    protected override void OnInitialized()
+    {
+        LoadVat();
+
+        dialogService.OnClose += Close;
+    }
+
+    void LoadVat()
+    {
+        taxes = VATService.GetVAT();
+        StateHasChanged();
+    }
+
+    VAT selectedVat = new VAT();
+    bool dialogIsOpen = false;
+
+    void Save()
+    {
+        Toaster.NotifyResult(VATService.Save(selectedVat),selectedVat.ToString());
+        LoadVat();
+        dialogIsOpen = false;
+    }
+
+    void ConfirmDelete(VAT vat)
+    {
+        dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression de la taxe " + vat.ToString(), vat);
+    }
+
+    void Close(dynamic dialogResult)
+    {
+        VAT vat = dialogResult as VAT;
+        if (vat != null)
+        {
+            Toaster.NotifyResult(VATService.Delete(vat), vat.ToString() );
+            LoadVat();
+            StateHasChanged();
+        }
+    }
+}

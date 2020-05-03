@@ -1,0 +1,123 @@
+﻿@page "/consignes"
+
+@inject Faitout.Services.UploadService UploadService
+@inject Faitout.Services.DepositService DepositService
+
+<h1>Consignes</h1>
+
+<p>Si dessous la liste de toute les consignes que vous gérez.</p>
+
+@if (deposits == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <RadzenButton Click="@(e => { selectedDeposit = new Deposit();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+        <EditForm Model="@selectedDeposit" OnValidSubmit="@Save">
+            <MatDialogContent>
+                <DataAnnotationsValidator />
+                <p>Nom</p>
+                <MatTextField @bind-Value="@selectedDeposit.Name"></MatTextField>
+                <ValidationMessage For="@(()=> selectedDeposit.Name)" />
+                <p>Description</p>
+                <MatTextField @bind-Value="@selectedDeposit.Description"></MatTextField>
+                <ValidationMessage For="@(()=> selectedDeposit.Description)" />
+                <p>Prix</p>
+                <MatNumericUpDownField Step="0.01m" DecimalPlaces=2 Minimum="0" FieldType="MatNumericUpDownFieldType.Currency" @bind-Value="@selectedDeposit.Price"></MatNumericUpDownField>
+
+                <p>Image</p>
+                <UploadFileDisplay ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </MatDialogActions>
+        </EditForm>
+    </MatDialog>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th></th>
+                @*Picture*@
+                <th>Nom</th>
+                <th>Description</th>
+                <th>Prix</th>
+                <th>Quantité</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var deposit in deposits.OrderBy(x => x.Price))
+            {
+                <tr>
+                    <td><RadzenImage Path="@deposit.PicturesName.GetFilePath()" Style="width:50px" /></td>
+                    <td>@deposit.Name</td>
+                    <td>@deposit.Description</td>
+                    <td>@deposit.Price €</td>
+                    <td>@deposit.CurrentStock</td>
+                    <td><MatButton OnClick="@(e => { selectedDeposit = deposit;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(deposit); })">Supprimer</MatButton></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    public List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+
+    private List<Deposit> deposits;
+
+    protected override void OnInitialized()
+    {
+        LoadDeposits();
+
+        dialogService.OnClose += Close;
+    }
+
+    void LoadDeposits()
+    {
+        deposits = DepositService.GetDeposits();
+        StateHasChanged();
+    }
+
+    Deposit selectedDeposit = new Deposit();
+    bool dialogIsOpen = false;
+
+    void Save()
+    {
+        if (SelectedImages.Count != 0)
+        {
+            if (!String.IsNullOrWhiteSpace(selectedDeposit.PicturesName))
+                UploadService.Remove(selectedDeposit.PicturesName);
+            selectedDeposit.PicturesName = SelectedImages.First().InternalFileName;
+
+        }
+        Toaster.NotifyResult(DepositService.Save(selectedDeposit),selectedDeposit.ToString());
+        LoadDeposits();
+        dialogIsOpen = false;
+        SelectedImages.Clear();
+    }
+
+    void ConfirmDelete(Deposit deposit)
+    {
+        dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression de la consigne " + deposit.ToString(), deposit);
+    }
+
+    void Close(dynamic dialogResult)
+    {
+        Deposit deposit = dialogResult as Deposit;
+        if (deposit != null)
+        {
+            Toaster.NotifyResult(DepositService.Delete(deposit),deposit.ToString());
+            LoadDeposits();
+            StateHasChanged();
+        }
+    }
+}

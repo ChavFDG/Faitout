@@ -1,0 +1,123 @@
+﻿@page "/catégories"
+
+@inject Faitout.Services.UploadService UploadService
+@inject Faitout.Services.CategoryService CategoryService
+@inject Faitout.Services.VATService VATService
+
+<h1>Catégories</h1>
+
+<p>Si dessous la liste de toute les catégories de produits que vous gérez.</p>
+
+@if (categories == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    <RadzenButton Click="@(e => { selectedCategory = new Category();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+        <EditForm Model="@selectedCategory" OnValidSubmit="@Save">
+            <MatDialogContent>
+                <DataAnnotationsValidator />
+                <p>Nom</p>
+                <MatTextField @bind-Value="@selectedCategory.Name"></MatTextField>
+                <ValidationMessage For="@(()=> selectedCategory.Name)" />
+                <p>Description</p>
+                <MatTextField @bind-Value="@selectedCategory.Description"></MatTextField>
+                <ValidationMessage For="@(()=> selectedCategory.Description)" />
+                <p>Choisir une TAV sur place</p>
+                <MatSelect HelperText="Choisir une TVA sur place" Label="Choisir une TVA sur place" @bind-Value="@selectedCategory.EatInVatId">
+                    @foreach (var vat in vats)
+                        {
+                        <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
+                        }
+                </MatSelect>
+                <MatSelect HelperText="Choisir une TVA à emporter" Label="Choisir une TVA à emporter" @bind-Value="@selectedCategory.TakeAwayVatId">
+                    @foreach (var vat in vats)
+                        {
+                        <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
+                        }
+                </MatSelect>
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </MatDialogActions>
+        </EditForm>
+    </MatDialog>
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Description</th>
+                <th>TVA sur place</th>
+                <th>TVA à emporter</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var deposit in categories.OrderBy(x => x.Name))
+            {
+                <tr>
+                    <td>@deposit.Name</td>
+                    <td>@deposit.Description</td>
+                    <td>@deposit.EatInVat.ToString()</td>
+                    <td>@deposit.TakeAwayVat.ToString()</td>
+                    <td><MatButton OnClick="@(e => { selectedCategory = deposit;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(deposit); })">Supprimer</MatButton></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    private List<VAT> vats;
+
+    private List<Category> categories;
+
+    protected override void OnInitialized()
+    {
+        vats = VATService.GetVAT();
+
+        LodaCategories();
+
+        dialogService.OnClose += Close;
+    }
+
+    void LodaCategories()
+    {
+        categories = CategoryService.GetCategory();
+        StateHasChanged();
+    }
+
+    Category selectedCategory = new Category();
+    bool dialogIsOpen = false;
+
+    void Save()
+    {
+        Toaster.NotifyResult(CategoryService.Save(selectedCategory), selectedCategory.ToString());
+        LodaCategories();
+        dialogIsOpen = false;
+    }
+
+    void ConfirmDelete(Category category)
+    {
+        dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression de la catégorie " + category.ToString(), category);
+    }
+
+    void Close(dynamic dialogResult)
+    {
+        Category category = dialogResult as Category;
+        if (category != null)
+        {
+            Toaster.NotifyResult(CategoryService.Delete(category), category.ToString());
+            LodaCategories();
+            StateHasChanged();
+        }
+    }
+}

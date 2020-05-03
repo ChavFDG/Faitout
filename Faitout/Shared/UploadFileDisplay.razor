@@ -1,0 +1,73 @@
+﻿@inject Faitout.Services.UploadService UploadService
+@inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
+
+
+<MatFileUpload Label="Déposer ou choisir" OnChange="@FilesReadyForUpload"></MatFileUpload>
+@foreach (var image in SelectedImages)
+{
+    <p>
+        @if (image.IsImage())
+        {
+            <RadzenImage Path="@image.InternalFileName.GetFilePath()" Style="width:50px" />
+        }
+        @image.UserFileName <MatButton Icon="close" Type="button" @onclick="@(e=> { SelectedImages.Remove(image); UploadService.Remove(image.InternalFileName); })" />
+    </p>
+}
+
+
+
+@code {
+    [Parameter]
+    public bool ImageOnly { get; set; } = false;
+
+    [Parameter]
+    public bool MultipleFile { get; set; } = false;
+
+    [Parameter]
+    public List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+
+    async Task FilesReadyForUpload(IMatFileUploadEntry[] files)
+    {
+        if (files == null)
+            return;
+        if (!MultipleFile)
+            if (files.Length < 1)
+            {
+                Toaster.Add("Veuillez selectionner qu'un seul fichier ", MatToastType.Warning, "Fichiers multiples");
+                return;
+            }
+            else if (SelectedImages.Count == 1)
+            {
+                //Remove preview image
+                UploadService.Remove(SelectedImages.First().InternalFileName);
+                SelectedImages = new List<UploadedFileInfo>();
+            }
+
+        try
+        {
+            foreach (var file in files)
+            {
+                if (file.Size > 1024 * 1024)
+                {
+                    Toaster.Add(file.Name + " dépasse la taille authorisé", MatToastType.Warning, "Taille invalide");
+                    continue;
+                }
+                if (!file.Type.StartsWith("image") && ImageOnly)
+                {
+                    Toaster.Add(file.Name + " n'est pas une image valide", MatToastType.Warning, "Image invalide");
+                    continue;
+                }
+
+                SelectedImages.Add(await UploadService.WriteFile(file));
+            }
+        }
+        catch (Exception e)
+        {
+            Toaster.Add(e.Message, MatToastType.Danger, "Erreur lors du téléversement");
+        }
+        finally
+        {
+            await InvokeAsync(async () => { this.StateHasChanged(); });
+        }
+    }
+}

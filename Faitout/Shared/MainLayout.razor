@@ -1,0 +1,43 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+
+<MatToastContainer />
+<RadzenDialog />
+
+<AuthorizeView>
+    <Authorized>
+        <div class="sidebar">
+            <NavMenu />
+        </div>
+
+        <div class="main">
+            <div class="top-row px-4 auth">
+                <LoginDisplay />
+            </div>
+
+            <div class="content px-4">
+                @Body
+            </div>
+        </div>
+
+
+    </Authorized>
+    <NotAuthorized>
+        <div class="text-center col-12">
+            <br />
+            <br />
+            <button type="button" class="btn btn-primary" @onclick="NavigateToLogin">Se connecter</button>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+
+@code {
+
+
+    void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/Identity/Account/Login", true);
+    }
+}
