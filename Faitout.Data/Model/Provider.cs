@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class Provider
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Nom")]
         public string Name { get; set; }
@@ -25,9 +25,5 @@ namespace Faitout.Data.Model
         public string Delevery { get; set; }
         [Display(Name = "Informations complémentaire")]
         public string ComplementaryInformations { get; set; }
-
-
-        [Display(Name = "Matiére première")]
-        public List<SubRawMaterialIngredient> SubRawMaterialIngredients { get; set; }
     }
 }

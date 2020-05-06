@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class Order
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Numéro de devis / facture")]
         public string OrderId { get; set; }
@@ -34,13 +34,13 @@ namespace Faitout.Data.Model
         public DateTime OrderModeDayAndTime { get; set; }
 
         [Display(Name = "Entré de commande")]
-        public List<Order> Orders { get; set; }
+        public List<Order> Orders { get; set; } = new List<Order>();
 
         [Display(Name = "Paiments")]
-        public List<Payement> Payments{ get; set; }
+        public List<Payement> Payments { get; set; } = new List<Payement>();
 
         [Display(Name = "Réductions")]
-        public List<Discount> Discounts{ get; set; }
+        public List<Discount> Discounts { get; set; } = new List<Discount>();
     }
 
     public enum OrderState

@@ -1,7 +1,7 @@
 ﻿@inject Faitout.Services.UploadService UploadService
 @inject Microsoft.AspNetCore.Hosting.IWebHostEnvironment WebHostEnvironment
 
-
+<p>@Label</p>
 <MatFileUpload Label="Déposer ou choisir" OnChange="@FilesReadyForUpload"></MatFileUpload>
 @foreach (var image in SelectedImages)
 {
@@ -17,6 +17,9 @@
 
 
 @code {
+    [Parameter]
+    public string Label { get; set; } = "Choisir un fichier";
+
     [Parameter]
     public bool ImageOnly { get; set; } = false;
 

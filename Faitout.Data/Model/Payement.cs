@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class Payement
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Date et heure du payement")]
         public DateTime Date { get; set; }

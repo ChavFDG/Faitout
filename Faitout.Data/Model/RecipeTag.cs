@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class RecipeTag
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Id de recette")]
         public Guid RecipeId { get; set; }

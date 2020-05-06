@@ -48,6 +48,8 @@ namespace Faitout
             services.AddScoped<TagService>();
             services.AddScoped<DialogService>();
             services.AddScoped<CategoryService>();
+            services.AddScoped<RecipeService>();
+            services.AddScoped<IngredientService>();
             services.AddHttpClient<IUserService, UserService>();
             services.AddMatToaster(config =>
             {
@@ -59,10 +61,11 @@ namespace Faitout
                 config.VisibleStateDuration = 3000;
             });
             services.AddScoped<UploadService>();
+            //Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("MjUxOTE4QDMxMzgyZTMxMmUzMGRzaUcxRDNBUTk1OWtYcmF6WWE5SGhBK0ttQTFBQm5pT3dRN1Q0MGlaQk09");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ApplicationDbContext context, UserManager<User> userManager)
         {
             if (env.IsDevelopment())
             {
@@ -90,6 +93,15 @@ namespace Faitout
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+
+            //Populate database
+            if (!context.CompanyConfiguration.Any())
+                ApplicationDbContext.PopulateDataBase(context);
+            //Create admin
+
+            var admin = new User { Name ="Admin", IsAdmin = true, Email= "damien.paravel@gmail.com", };
+
+            userManager.CreateAsync(admin, "N97qw2HKqSzhHA!").Wait();
         }
     }
 }

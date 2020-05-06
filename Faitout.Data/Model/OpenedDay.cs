@@ -19,7 +19,7 @@ namespace Faitout.Data.Model
         }
 
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         //Day
         [Display(Name = "Jour")]
         public DayOfWeek Day { get; set; }
@@ -31,6 +31,6 @@ namespace Faitout.Data.Model
         //Delivery
         [Display(Name = "Fait de la livraison")]
         public bool EnableDelivery { get; set; } = false;
-        public List<TimeRange> TimeRanges { get; set; }
+        public List<TimeRange> TimeRanges { get; set; } = new List<TimeRange>();
     }
 }

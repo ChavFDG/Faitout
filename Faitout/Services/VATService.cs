@@ -16,7 +16,7 @@ namespace Faitout.Services
         }
         public List<VAT> GetVAT()
         {
-            return  _context.Taxes.ToList();
+            return  _context.VATs.ToList();
         }
 
         public Result Save(VAT vat)
@@ -24,17 +24,19 @@ namespace Faitout.Services
             if (vat is null)
                 return new Result("VAT est null") ;
 
-            if(vat.Id == Guid.Empty)
+            if (_context.VATs.Any(x => x.Tax == vat.Tax))
+            return new Result("La tax " + vat.ToString() + " existe déjà");
+
+            if (_context.VATs.Any(x=>x.Id == vat.Id))
             {
-                //Créer
-                _context.Taxes.Add(vat);
+                //Modifier
                 _context.SaveChanges();
                 return new Result();
             }
             else
             {
-                //Modifier
-                //
+                //Créer
+                _context.VATs.Add(vat);
                 _context.SaveChanges();
                 return new Result();
             }
@@ -44,10 +46,10 @@ namespace Faitout.Services
         {
             if (vat is null)
                 return new Result("VAT est null");
-            VAT vatToDelete = _context.Taxes.FirstOrDefault(x => x.Id == vat.Id);
+            VAT vatToDelete = _context.VATs.FirstOrDefault(x => x.Id == vat.Id);
             if (vatToDelete != null)
             {
-                _context.Taxes.Remove(vatToDelete);
+                _context.VATs.Remove(vatToDelete);
                 _context.SaveChanges();
             }
             return new Result();

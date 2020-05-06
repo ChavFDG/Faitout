@@ -5,28 +5,28 @@
 
 <p>Si dessous la liste de toute les TVA que vous gérez.</p>
 
-@if (taxes == null)
+@if (vats == null)
 {
     <p><em>Chargement...</em></p>
 }
 else
 {
-    <RadzenButton Click="@(e => { selectedVat = new VAT();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+    <RadzenButton Click="@(e => { selectedVat = new VAT();tempSelectedTax = 0;  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
 
     <MatDialog @bind-IsOpen="@dialogIsOpen">
-            <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
-            <EditForm Model="@selectedVat" OnValidSubmit="@Save">
-                <MatDialogContent>
-                    <DataAnnotationsValidator />
-                    <p>Valeur de la TVA</p>
-                    <MatNumericUpDownField Step="0.01m" DecimalPlaces=2 Minimum="0" Maximum="100" FieldType="MatNumericUpDownFieldType.Percent" @bind-Value="@selectedVat.Tax"></MatNumericUpDownField>
-                </MatDialogContent>
-                <MatDialogActions>
-                    <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
-                    <MatButton Type="submit">Sauvegarder</MatButton>
-                </MatDialogActions>
-            </EditForm>
-        </MatDialog>
+        <MatDialogTitle>Taxe</MatDialogTitle>
+        <EditForm Model="@selectedVat" OnValidSubmit="@Save">
+            <MatDialogContent>
+                <DataAnnotationsValidator />
+                <MatNumericUpDownField Label="Valeur de la TVA" Step="0.01m" DecimalPlaces=2 Minimum="0" Maximum="100" FieldType="MatNumericUpDownFieldType.Percent" 
+                                       @bind-Value="tempSelectedTax"/>
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </MatDialogActions>
+        </EditForm>
+    </MatDialog>
 
 
     <table class="table">
@@ -37,12 +37,18 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var vat in taxes.OrderBy(x => x.Tax))
+            @foreach (var vat in vats.OrderBy(x => x.Tax))
             {
-            <tr>
-                <td>@vat.ToString()</td>
-                <td><MatButton OnClick="@(e => { selectedVat = vat;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(vat); })">Supprimer</MatButton></td>
-            </tr>
+                <tr>
+                    <td>@vat.ToString()</td>
+                    <td>
+                        @if (vat.Tax != 0)
+                        {
+                            <MatButton OnClick="@(e => { selectedVat = vat; tempSelectedTax = vat.Tax;  dialogIsOpen = true; })">Modifier</MatButton>
+                            <MatButton Disabled="@(vat.TakeAwayCategories.Any()||vat.EatInCategories.Any())" OnClick="@(e => { ConfirmDelete(vat); })">Supprimer</MatButton>
+                        }
+                    </td>
+                </tr>
             }
         </tbody>
     </table>
@@ -51,8 +57,8 @@ else
 @code {
 
 
-
-    private List<VAT> taxes;
+    private decimal tempSelectedTax = 0;
+    private List<VAT> vats;
 
     protected override void OnInitialized()
     {
@@ -63,7 +69,7 @@ else
 
     void LoadVat()
     {
-        taxes = VATService.GetVAT();
+        vats = VATService.GetVAT();
         StateHasChanged();
     }
 
@@ -72,7 +78,13 @@ else
 
     void Save()
     {
-        Toaster.NotifyResult(VATService.Save(selectedVat),selectedVat.ToString());
+        if (vats.Any(x => x.Tax == tempSelectedTax))
+            Toaster.NotifyFail("Modification annulé", "La tax " + selectedVat.ToString() + " existe déjà");
+        else
+        {
+            selectedVat.Tax = tempSelectedTax;
+            Toaster.NotifyResult(VATService.Save(selectedVat), selectedVat.ToString());
+        }
         LoadVat();
         dialogIsOpen = false;
     }
@@ -87,7 +99,7 @@ else
         VAT vat = dialogResult as VAT;
         if (vat != null)
         {
-            Toaster.NotifyResult(VATService.Delete(vat), vat.ToString() );
+            Toaster.NotifyResult(VATService.Delete(vat), vat.ToString());
             LoadVat();
             StateHasChanged();
         }

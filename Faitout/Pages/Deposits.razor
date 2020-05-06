@@ -16,21 +16,16 @@ else
     <RadzenButton Click="@(e => { selectedDeposit = new Deposit();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
 
     <MatDialog @bind-IsOpen="@dialogIsOpen">
-        <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+        <MatDialogTitle>Consigne</MatDialogTitle>
         <EditForm Model="@selectedDeposit" OnValidSubmit="@Save">
             <MatDialogContent>
                 <DataAnnotationsValidator />
-                <p>Nom</p>
-                <MatTextField @bind-Value="@selectedDeposit.Name"></MatTextField>
+                <MatTextField Label="Nom"  @bind-Value="@selectedDeposit.Name"></MatTextField>
                 <ValidationMessage For="@(()=> selectedDeposit.Name)" />
-                <p>Description</p>
-                <MatTextField @bind-Value="@selectedDeposit.Description"></MatTextField>
+                <MatTextField Label="Description" @bind-Value="@selectedDeposit.Description"></MatTextField>
                 <ValidationMessage For="@(()=> selectedDeposit.Description)" />
-                <p>Prix</p>
-                <MatNumericUpDownField Step="0.01m" DecimalPlaces=2 Minimum="0" FieldType="MatNumericUpDownFieldType.Currency" @bind-Value="@selectedDeposit.Price"></MatNumericUpDownField>
-
-                <p>Image</p>
-                <UploadFileDisplay ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
+                <MatNumericUpDownField Label="Prix" Step="0.01m" DecimalPlaces=2 Minimum="0" FieldType="MatNumericUpDownFieldType.Currency" @bind-Value="@selectedDeposit.Price"></MatNumericUpDownField>
+                <UploadFileDisplay Label="Image" ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
             </MatDialogContent>
             <MatDialogActions>
                 <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
@@ -117,7 +112,6 @@ else
         {
             Toaster.NotifyResult(DepositService.Delete(deposit),deposit.ToString());
             LoadDeposits();
-            StateHasChanged();
         }
     }
 }

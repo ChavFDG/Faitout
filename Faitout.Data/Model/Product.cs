@@ -10,6 +10,8 @@ namespace Faitout.Data.Model
     public class Product : ProductStock
     {
 
+        //EST a VENDRE ? EN gros, possibilité de créer le produit, rajouter les infos au fur et à mesure avant de le mettre en vente.
+        public bool ToSell { get; set; }
         [Display(Name = "Prix d'achat ou coût de production estimé")]
         [Column(TypeName = "decimal(18,2)")]
         public decimal BuyPrice { get; set; }
@@ -52,11 +54,8 @@ namespace Faitout.Data.Model
         [ForeignKey(nameof(DepositId))]
         public virtual Deposit Deposit { get; set; }
 
-        [Display(Name = "Lien produit, matiére première, ingrédient")]
-        public List<ProductIngredientRawMaterial> ProductsIngredientsRawMaterials { get; set; }
-
         [Display(Name = "Tags")]
-        public List<RecipeTag> RecipesTags { get; set; }
+        public List<RecipeTag> RecipesTags { get; set; } = new List<RecipeTag>();
 
         public override string ToString()
         {

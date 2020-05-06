@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class CompanyConfiguration
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
         
         //Pickup and delivery
         [Display(Name = "Fait du à emporter")]

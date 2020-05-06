@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class ProductTag
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Id de product")]
         public Guid ProductId { get; set; }

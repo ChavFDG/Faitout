@@ -1,16 +1,140 @@
 ﻿@page "/counter"
 
-<h1>Counter</h1>
 
-<p>Current count: @currentCount</p>
+<MatButton @onclick="(() => Modal.Open())">Ouvrir modal</MatButton>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<FtModal @ref="Modal">
+    <MatAutocompleteList Items="@Ingres" TItem="Ingredient" ValueChanged="SelectionChanged" Label="Pick one"></MatAutocompleteList>
+</FtModal>
+
+@code
+        {
+
+    string[] options = new[]
+    {
+                "One",
+                "Two",
+                "Three"
+            };
+
+}
+
+
 
 @code {
-    private int currentCount = 0;
 
-    private void IncrementCount()
+        private FtModal Modal { get; set; }
+
+
+    bool ModalOpen = false;
+
+    bool Opened = true;
+
+    void ButtonClicked()
     {
-        currentCount++;
+        Opened = !Opened;
     }
+
+
+    Ingredient selectedIngre;
+
+    List<Ingredient> Ingres = new List<Ingredient>();
+
+    protected override void OnInitialized()
+    {
+        //Load tags
+        //        Ingres = new List<Ingredient>()
+        //{
+        //            new Ingredient(){Id = Guid.NewGuid(), Name="Test 1"},
+        //            new Ingredient(){Id = Guid.NewGuid(), Name="Azerty 2"},
+        //            new Ingredient(){Id = Guid.NewGuid(), Name="Truc de fou 3"},
+        //            new Ingredient(){Id = Guid.NewGuid(), Name="Pomme de t erre 4"}
+        //        };
+    }
+
+    void SelectionChanged(Ingredient val)
+    {
+        selectedIngre = val;
+
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+@*@page "/counter"
+
+
+
+    <MatAutocompleteList Items="@Ingres" TItem="Ingre" ValueChanged="SelectionChanged" Label="Pick one"></MatAutocompleteList>
+
+    @code
+            {
+
+        string[] options = new[]
+        {
+                    "One",
+                    "Two",
+                    "Three"
+                };
+
+    }
+
+
+
+    @code {
+
+        bool Opened = true;
+
+        void ButtonClicked()
+        {
+            Opened = !Opened;
+        }
+
+        public class Ingre
+        {
+            public Guid Id { get; set; }
+
+            public string Name { get; set; }
+
+            public override string ToString()
+            {
+                return Name;
+            }
+        }
+
+        Ingre selectedIngre;
+
+        List<Ingre> Ingres = new List<Ingre>();
+
+        protected override void OnInitialized()
+        {
+            //Load tags
+            Ingres = new List<Ingre>()
+    {
+                new Ingre(){Id = Guid.NewGuid(), Name="Test 1"},
+                new Ingre(){Id = Guid.NewGuid(), Name="Azerty 2"},
+                new Ingre(){Id = Guid.NewGuid(), Name="Truc de fou 3"},
+                new Ingre(){Id = Guid.NewGuid(), Name="Pomme de t erre 4"}
+            };
+        }
+
+        void SelectionChanged(Ingre val)
+        {
+            selectedIngre = val;
+
+        }
+
+    }*@

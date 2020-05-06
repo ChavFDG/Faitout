@@ -14,27 +14,33 @@
 }
 else
 {
-    <RadzenButton Click="@(e => { selectedCategory = new Category();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+    <RadzenButton Click="@(e => { OpenAddTopCategory(); })" Text="Ajouter une catégorie"></RadzenButton>
+    <RadzenButton Disabled="!canAddSubCategory" Click="@(e => { OpenAddSubCategory(selectedCategory); })" Text="Ajouter une sous catégorie"></RadzenButton>
+    <RadzenButton Disabled="!canModify" Click="@(e => { OpenModifyCategory(selectedCategory); })" Text="Modifier"></RadzenButton>
+    <RadzenButton Disabled="!canDelete" Click="@(e => { ConfirmDelete(selectedCategory); })" Text="Supprimer"></RadzenButton>
+    <RadzenButton Disabled="!canMoveDown" Click="MoveDown" Icon="keyboard_arrow_down"></RadzenButton>
+    <RadzenButton Disabled="!canMoveUp" Click="MoveUp" Icon="keyboard_arrow_up"></RadzenButton>
+
 
     <MatDialog @bind-IsOpen="@dialogIsOpen">
-        <MatDialogTitle>Ajout d'une nouvelle Taxe</MatDialogTitle>
+        <MatDialogTitle>Catégorie</MatDialogTitle>
         <EditForm Model="@selectedCategory" OnValidSubmit="@Save">
             <MatDialogContent>
                 <DataAnnotationsValidator />
-                <p>Nom</p>
-                <MatTextField @bind-Value="@selectedCategory.Name"></MatTextField>
+                <MatTextField Label="Nom" @bind-Value="@selectedCategory.Name"></MatTextField>
                 <ValidationMessage For="@(()=> selectedCategory.Name)" />
-                <p>Description</p>
-                <MatTextField @bind-Value="@selectedCategory.Description"></MatTextField>
-                <ValidationMessage For="@(()=> selectedCategory.Description)" />
-                <p>Choisir une TAV sur place</p>
-                <MatSelect HelperText="Choisir une TVA sur place" Label="Choisir une TVA sur place" @bind-Value="@selectedCategory.EatInVatId">
+                <MatTextField Label="Description" @bind-Value="@selectedCategory.Description"></MatTextField>
+                <span>Visible par le client</span>
+                <MatSlideToggle @bind-Value="@selectedCategory.ClientVisible"></MatSlideToggle>
+                <span>Visible sur la caisse</span>
+                <MatSlideToggle @bind-Value="@selectedCategory.CashRegisterVisible"></MatSlideToggle>
+                <MatSelect HelperText="TVA sur place" Label="TVA sur place" @bind-Value="@selectedCategory.EatInVatIdString">
                     @foreach (var vat in vats)
                         {
                         <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
                         }
                 </MatSelect>
-                <MatSelect HelperText="Choisir une TVA à emporter" Label="Choisir une TVA à emporter" @bind-Value="@selectedCategory.TakeAwayVatId">
+                <MatSelect HelperText="TVA à emporter" Label="TVA à emporter" @bind-Value="@selectedCategory.TakeAwayVatIdString">
                     @foreach (var vat in vats)
                         {
                         <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
@@ -48,60 +54,167 @@ else
         </EditForm>
     </MatDialog>
 
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Nom</th>
-                <th>Description</th>
-                <th>TVA sur place</th>
-                <th>TVA à emporter</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var deposit in categories.OrderBy(x => x.Name))
-            {
-                <tr>
-                    <td>@deposit.Name</td>
-                    <td>@deposit.Description</td>
-                    <td>@deposit.EatInVat.ToString()</td>
-                    <td>@deposit.TakeAwayVat.ToString()</td>
-                    <td><MatButton OnClick="@(e => { selectedCategory = deposit;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(deposit); })">Supprimer</MatButton></td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MatDivider />
+
+    <div class="row">
+        <div class="col-md-12">
+            <RadzenTree Style="width: 100%;" Change="@CatagorySelectedChange">
+                @foreach (var category in categories.Where(x => x.Level == 0))
+                {
+                    <ChildCategoryTree category="category" />
+                }
+            </RadzenTree>
+        </div>
+    </div>
+    <MatDivider />
 }
 
 
 @code {
 
+    public class CategoryTest
+    {
+        public Guid Id { get; set; }
+
+        public string Name { get; set; }
+
+        public string Description { get; set; }
+
+        public List<Product> Products { get; set; }
+
+
+        public Guid EatInVatId { get; set; }
+
+        public virtual VAT EatInVat { get; set; }
+
+        public Guid TakeAwayVatId { get; set; }
+
+        public virtual VAT TakeAwayVat { get; set; }
+
+        public int Level { get; set; } = 0;
+
+        public int Order { get; set; } = 0;
+
+        public Guid? ParentCategoryId { get; set; }
+
+        public virtual Category ParentCategory { get; set; }
+
+        public virtual List<Category> ChildCategories { get; set; }
+
+    }
+
+    private Category parent;
+    private int level;
+    private int order;
+
+    private bool canDelete = false;
+    private bool canAddSubCategory = false;
+    private bool canModify = false;
+    private bool canMoveDown = true;
+    private bool canMoveUp = true;
+
     private List<VAT> vats;
 
-    private List<Category> categories;
+    private List<Category> categories = new List<Category>();
 
     protected override void OnInitialized()
     {
+
+
         vats = VATService.GetVAT();
 
-        LodaCategories();
+        LoadCategories();
 
-        dialogService.OnClose += Close;
+        dialogService.OnClose += ConfirmDeleteDialogClose;
     }
 
-    void LodaCategories()
+    void LoadCategories()
     {
-        categories = CategoryService.GetCategory();
+        categories = CategoryService.GetCategoryOrderInTree();
         StateHasChanged();
     }
 
+    void SetMoves()
+    {
+
+    }
+
+    void CatagorySelectedChange(TreeEventArgs args)
+    {
+        if (args.Value == null)
+        {
+            canDelete = false;
+            canAddSubCategory = false;
+            canModify = false;
+        }
+        else
+        {
+            treeSelectedCategory = selectedCategory = (args.Value as Category);
+            canAddSubCategory = Guid.Empty != selectedCategory.Id;
+            canModify = Guid.Empty != selectedCategory.Id;
+            canDelete = !selectedCategory.Childs.Any();
+        }
+    }
+
+    void MoveUp()
+    {
+        CategoryService.ReduceOrder(selectedCategory);
+        LoadCategories();
+
+    }
+
+    void MoveDown()
+    {
+        CategoryService.IncreaseOrder(selectedCategory);
+        LoadCategories();
+    }
+
+
+    void OpenModifyCategory(Category category)
+    {
+        selectedCategory = category;
+        level = selectedCategory.Level;
+        order = selectedCategory.Order;
+        parent = selectedCategory.Parent;
+        dialogIsOpen = true;
+    }
+
+    void InitNewCategory()
+    {
+        selectedCategory = new Category();
+        selectedCategory.TakeAwayVatId = selectedCategory.EatInVatId = vats.First(x => x.Tax == 0).Id;
+    }
+
+    void OpenAddTopCategory()
+    {
+        InitNewCategory();
+        parent = null;
+        level = 0;
+        order = categories.Where(x => x.Level == 0).ToList().Count;
+        dialogIsOpen = true;
+    }
+
+    void OpenAddSubCategory(Category parentCategory)
+    {
+        InitNewCategory();
+        parent = parentCategory;
+        level = parentCategory.Level + 1;
+        order = parentCategory.Childs.ToList().Count;
+        dialogIsOpen = true;
+    }
+
     Category selectedCategory = new Category();
+    Category treeSelectedCategory = new Category();
     bool dialogIsOpen = false;
 
     void Save()
     {
+        selectedCategory.Level = level;
+        selectedCategory.Order = order;
+        selectedCategory.ParentId = parent?.Id;
         Toaster.NotifyResult(CategoryService.Save(selectedCategory), selectedCategory.ToString());
-        LodaCategories();
+        selectedCategory = treeSelectedCategory;
+        LoadCategories();
         dialogIsOpen = false;
     }
 
@@ -110,14 +223,18 @@ else
         dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression de la catégorie " + category.ToString(), category);
     }
 
-    void Close(dynamic dialogResult)
+    void ConfirmDeleteDialogClose(dynamic dialogResult)
     {
         Category category = dialogResult as Category;
         if (category != null)
         {
             Toaster.NotifyResult(CategoryService.Delete(category), category.ToString());
-            LodaCategories();
-            StateHasChanged();
+            canDelete = false;
+            canAddSubCategory = false;
+            canModify = false;
+            selectedCategory = new Category();
+
+            LoadCategories();
         }
     }
 }

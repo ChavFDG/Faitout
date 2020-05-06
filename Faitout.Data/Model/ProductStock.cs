@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class ProductStock
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Nom")]
         [Required(ErrorMessage ="Veuillez saisir un nom")]
@@ -42,6 +42,10 @@ namespace Faitout.Data.Model
 
         [Display(Name = "Activé en ligne")]
         public bool EnableOnLine { get; set; }
+
+
+        [Display(Name = "Tracabilité")]
+        public List<IngredientTraceability> Traceability { get; set; } = new List<IngredientTraceability>();
 
     }
 }

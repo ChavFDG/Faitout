@@ -22,20 +22,20 @@ namespace Faitout.Services
 
         public Result Save(Deposit deposit)
         {
+            
             if (deposit is null)
                 return new Result("Deposit est null") ;
 
-            if(deposit.Id == Guid.Empty)
+            if (_context.Deposits.Any(x => x.Id == deposit.Id))
             {
-                //Créer
-                _context.Deposits.Add(deposit);
+                //Modifier
                 _context.SaveChanges();
                 return new Result();
             }
             else
             {
-                //Modifier
-                //
+                //Créer
+                _context.Deposits.Add(deposit);
                 _context.SaveChanges();
                 return new Result();
             }

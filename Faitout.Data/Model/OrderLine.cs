@@ -10,7 +10,7 @@ namespace Faitout.Data.Model
     public class OrderLine
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Id de commande")]
         public Guid OrderId { get; set; }
@@ -38,7 +38,11 @@ namespace Faitout.Data.Model
 
         [Display(Name = "Sell price")]
         [Column(TypeName = "decimal(18,2)")]
-        public decimal Price { get; set; }    
+        public decimal Price { get; set; }
+
+        [Display(Name = "%")]
+        [Column(TypeName = "decimal(18,3)")]
+        public decimal Tax { get; set; }
     }
 
 

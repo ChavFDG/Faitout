@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,7 +11,7 @@ namespace Faitout.Data.Model
     public class VAT
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid(); 
 
         [Display(Name = "%")]
         [Column(TypeName = "decimal(18,3)")]
@@ -18,14 +19,14 @@ namespace Faitout.Data.Model
         public decimal Tax { get; set; }
 
         [Display(Name = "Catégories à emporter")]
-        public List<Category> TakeAwayCategories { get; set; }
+        public List<Category> TakeAwayCategories { get; set; } = new List<Category>();
 
         [Display(Name = "Catégories sur place")]
-        public List<Category> EatInCategories { get; set; }
+        public List<Category> EatInCategories { get; set; } = new List<Category>();
 
         public override string ToString()
         {
-            return (Tax).ToString("##0.##%") ;
+            return (Tax).ToString("##0.##%");
         }
 
     }

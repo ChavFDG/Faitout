@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class StockMove
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Date et heure du mouvement")]
         public DateTime Date { get; set; }

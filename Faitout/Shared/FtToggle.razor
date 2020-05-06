@@ -1,0 +1,41 @@
+﻿
+
+
+    <div>
+        <MatSlideToggle @bind-Value="@Value"></MatSlideToggle>
+        <span>@Label</span>
+    </div>
+
+
+
+@code {
+
+    [Parameter]
+    public string LabelWhenFalse { get; set; } = "non";
+
+    [Parameter]
+    public string LabelWhenTrue { get; set; } = "oui";
+
+    private string Label = "non";
+
+    private bool _value = false;
+    [Parameter]
+    public bool Value
+    {
+        get => _value;
+        set
+        {
+            if (_value == value) return;
+            _value = value;
+
+            if (value)
+                Label = LabelWhenTrue;
+            else
+                Label = LabelWhenFalse;
+
+            ValueChanged.InvokeAsync(value);
+        }
+    }
+    [Parameter]
+    public EventCallback<bool> ValueChanged { get; set; }
+}

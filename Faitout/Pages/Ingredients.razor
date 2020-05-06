@@ -1,0 +1,121 @@
+﻿@page "/ingredients"
+
+@inject Faitout.Services.IngredientService IngredientService
+
+<h1>Ingrédients</h1>
+
+<p>Si dessous la liste de tout les ingrédients que vous gérez.</p>
+
+@if (ingredients == null)
+{
+    <p><em>Chargement...</em></p>
+}
+else
+{
+    @*<RadzenButton Click="@(e => { selectedTag = new Tag();  dialogIsOpen = true; })" Text="Ajouter"></RadzenButton>
+
+    <MatDialog @bind-IsOpen="@dialogIsOpen">
+        <MatDialogTitle>Tag</MatDialogTitle>
+        <EditForm Model="@selectedTag" OnValidSubmit="@Save">
+            <MatDialogContent>
+                <DataAnnotationsValidator />
+                <MatTextField Label="Nom" @bind-Value="@selectedTag.Name"></MatTextField>
+                <ValidationMessage For="@(()=> selectedTag.Name)" />
+                <MatTextField Label="Description" @bind-Value="@selectedTag.Description"></MatTextField>
+                <ValidationMessage For="@(()=> selectedTag.Description)" />
+                <p>Couleur :</p>
+                <ColorPicker @bind-Color="@selectedTag.Color" />
+                <div>
+                    <p>
+                        Aperçue :
+                        <FtTag Tag="selectedTag" />
+                    </p>
+                </div>
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </MatDialogActions>
+        </EditForm>
+    </MatDialog>*@
+
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nom</th>
+                <th>Informations</th>
+                <th>Bio</th>
+                <th>Allergene</th>
+                <th>AOP</th>
+                <th>AOC</th>
+                <th>Origine</th>
+                <th>Ingrédients</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var ingredient in ingredients.OrderBy(x => x.Name))
+            {
+            <tr>
+                <td>@ingredient.Name</td>
+                <td>@ingredient.ComplementaryInformations</td>
+                <td>@ingredient.IsOrganic</td>
+                <td>@ingredient.IsAllergen</td>
+                <td>@ingredient.IsAOP</td>
+                <td>@ingredient.IsAOC</td>
+                <td>@ingredient.Origin</td>
+                <td><MatButton OnClick="@(e => { selectedIngredient = ingredient;  dialogIsOpen = true; })">Voir les @ingredient.SubIngredients.Count()</MatButton></td>
+                <td>
+                    <MatButton OnClick="@(e => { selectedIngredient = ingredient;  dialogIsOpen = true; })">Modifier</MatButton> |
+                    <MatButton Disabled="@(ingredient.IngredientRecipeQuantity.Any())" OnClick="@(e => { ConfirmDelete(ingredient); })">Supprimer</MatButton>
+                </td>
+            </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+@code {
+
+    private List<Ingredient> ingredients;
+    Ingredient selectedIngredient = new Ingredient();
+
+    bool dialogIsOpen = false;
+
+    protected override void OnInitialized()
+    {
+        LoadTags();
+
+        dialogService.OnClose += Close;
+    }
+
+    void LoadTags()
+    {
+        ingredients = IngredientService.GetIngredients();
+        StateHasChanged();
+    }
+
+
+    void Save()
+    {
+        Toaster.NotifyResult(IngredientService.Save(selectedIngredient), selectedIngredient.ToString());
+        LoadTags();
+        dialogIsOpen = false;
+    }
+
+    void ConfirmDelete(Ingredient ingredient)
+    {
+        dialogService.OpenConfirmDialog("Suppression", "Confirmer la suppression de l'ingrédient " + ingredient.ToString(), ingredient);
+    }
+
+    void Close(dynamic dialogResult)
+    {
+        Ingredient ingredient = dialogResult as Ingredient;
+        if (ingredient != null)
+        {
+            Toaster.NotifyResult(IngredientService.Delete(ingredient), ingredient.ToString());
+            LoadTags();
+        }
+    }
+}

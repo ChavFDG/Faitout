@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class Discount
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         [Display(Name = "Réduction")]
         [Column(TypeName = "decimal(18,2)")]

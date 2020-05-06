@@ -181,3 +181,7 @@ app {
         display: block;
     }
 }
+
+.modal-full {
+    max-width: 80%
+}

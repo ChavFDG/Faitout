@@ -23,19 +23,19 @@ namespace Faitout.Services
         public Result Save(Tag tag)
         {
             if (tag is null)
-                return new Result("Deposit est null") ;
+                return new Result("Deposit est null");
 
-            if(tag.Id == Guid.Empty)
+
+            if (_context.Tags.Any(x => x.Id == tag.Id))
             {
-                //Créer
-                _context.Tags.Add(tag);
+                //Modifier
                 _context.SaveChanges();
                 return new Result();
             }
             else
             {
-                //Modifier
-                //
+                //Créer
+                _context.Tags.Add(tag);
                 _context.SaveChanges();
                 return new Result();
             }
@@ -46,7 +46,7 @@ namespace Faitout.Services
             if (tag is null)
                 return new Result("tag est null");
             if (tag.RecipesTags.Any() || tag.ProductTags.Any())
-                return new Result("Impossible de supprimer" + tag.ToString()) ;
+                return new Result("Impossible de supprimer" + tag.ToString());
             Tag tagToDelete = _context.Tags.FirstOrDefault(x => x.Id == tag.Id);
             if (tagToDelete != null)
             {

@@ -9,7 +9,7 @@ namespace Faitout.Data.Model
     public class TimeRange
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
 
         public Guid OpenedDayId { get; set; }
         [ForeignKey(nameof(OpenedDayId))]

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Faitout.Migrations
 {
-    public partial class InitialCreation : Migration
+    public partial class InitialCreator : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -75,6 +75,32 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Ingredients",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: true),
+                    ComplementaryInformations = table.Column<string>(nullable: true),
+                    IsOrganic = table.Column<bool>(nullable: false),
+                    Origin = table.Column<string>(nullable: true),
+                    IsAllergen = table.Column<bool>(nullable: false),
+                    IsAOC = table.Column<bool>(nullable: false),
+                    IsAOP = table.Column<bool>(nullable: false),
+                    PictureName = table.Column<string>(nullable: true),
+                    ParentId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ingredients", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Ingredients_Ingredients_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Ingredients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OpenedDays",
                 columns: table => new
                 {
@@ -112,11 +138,14 @@ namespace Faitout.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
-                    Description = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
+                    UseOven = table.Column<bool>(nullable: false),
+                    OvenTemepature = table.Column<int>(nullable: false),
+                    OvenHumidity = table.Column<int>(nullable: false),
+                    OvenTime = table.Column<TimeSpan>(nullable: false),
                     Steps = table.Column<string>(nullable: true),
                     Quantity = table.Column<int>(nullable: false),
-                    PicturePath = table.Column<string>(nullable: true)
+                    PicturesNames = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -129,8 +158,8 @@ namespace Faitout.Migrations
                 {
                     Id = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(nullable: false),
-                    Description = table.Column<string>(nullable: false),
-                    Icon = table.Column<string>(nullable: true)
+                    Description = table.Column<string>(nullable: true),
+                    Color = table.Column<string>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -138,7 +167,7 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Taxes",
+                name: "VATs",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -146,7 +175,7 @@ namespace Faitout.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Taxes", x => x.Id);
+                    table.PrimaryKey("PK_VATs", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -307,40 +336,26 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "RawMaterials",
+                name: "IngredientsRecipesQuantities",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
-                    PicturePath = table.Column<string>(nullable: true),
-                    ProviderId = table.Column<Guid>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_RawMaterials", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_RawMaterials_Providers_ProviderId",
-                        column: x => x.ProviderId,
-                        principalTable: "Providers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Ingredients",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
                     Quantity = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     QuantityUnity = table.Column<int>(nullable: false),
-                    RecipeId = table.Column<Guid>(nullable: false)
+                    RecipeId = table.Column<Guid>(nullable: false),
+                    IngredientId = table.Column<Guid>(nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Ingredients", x => x.Id);
+                    table.PrimaryKey("PK_IngredientsRecipesQuantities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Ingredients_Recipes_RecipeId",
+                        name: "FK_IngredientsRecipesQuantities_Ingredients_IngredientId",
+                        column: x => x.IngredientId,
+                        principalTable: "Ingredients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_IngredientsRecipesQuantities_Recipes_RecipeId",
                         column: x => x.RecipeId,
                         principalTable: "Recipes",
                         principalColumn: "Id",
@@ -354,22 +369,33 @@ namespace Faitout.Migrations
                     Id = table.Column<Guid>(nullable: false),
                     Name = table.Column<string>(nullable: false),
                     Description = table.Column<string>(nullable: true),
+                    ClientVisible = table.Column<bool>(nullable: false),
+                    CashRegisterVisible = table.Column<bool>(nullable: false),
                     EatInVatId = table.Column<Guid>(nullable: false),
-                    TakeAwayVatId = table.Column<Guid>(nullable: false)
+                    TakeAwayVatId = table.Column<Guid>(nullable: false),
+                    Level = table.Column<int>(nullable: false),
+                    Order = table.Column<int>(nullable: false),
+                    ParentId = table.Column<Guid>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Categories", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Categories_Taxes_EatInVatId",
+                        name: "FK_Categories_VATs_EatInVatId",
                         column: x => x.EatInVatId,
-                        principalTable: "Taxes",
+                        principalTable: "VATs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Categories_Taxes_TakeAwayVatId",
+                        name: "FK_Categories_Categories_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Categories",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Categories_VATs_TakeAwayVatId",
                         column: x => x.TakeAwayVatId,
-                        principalTable: "Taxes",
+                        principalTable: "VATs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -436,34 +462,6 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "SubRawMaterialsIngredients",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
-                    Ordre = table.Column<int>(nullable: false),
-                    Quantity = table.Column<int>(nullable: false),
-                    RawMaterialId = table.Column<Guid>(nullable: false),
-                    ProviderId = table.Column<Guid>(nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_SubRawMaterialsIngredients", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_SubRawMaterialsIngredients_Providers_ProviderId",
-                        column: x => x.ProviderId,
-                        principalTable: "Providers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_SubRawMaterialsIngredients_RawMaterials_RawMaterialId",
-                        column: x => x.RawMaterialId,
-                        principalTable: "RawMaterials",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "ProductStocks",
                 columns: table => new
                 {
@@ -478,6 +476,7 @@ namespace Faitout.Migrations
                     Enable = table.Column<bool>(nullable: false),
                     EnableOnLine = table.Column<bool>(nullable: false),
                     Discriminator = table.Column<string>(nullable: false),
+                    ToSell = table.Column<bool>(nullable: true),
                     BuyPrice = table.Column<decimal>(type: "decimal(18,2)", nullable: true),
                     InitialStock = table.Column<int>(nullable: true),
                     DLC = table.Column<DateTime>(nullable: true),
@@ -513,39 +512,27 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductsIngredientsRawMaterials",
+                name: "IngredientsTraceabilities",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    ProductId = table.Column<Guid>(nullable: true),
-                    IngredientId = table.Column<Guid>(nullable: true),
-                    RawMaterialId = table.Column<Guid>(nullable: true)
+                    ProductStockId = table.Column<Guid>(nullable: false),
+                    ComplementaryInformation = table.Column<string>(nullable: true),
+                    Picture = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductsIngredientsRawMaterials", x => x.Id);
+                    table.PrimaryKey("PK_IngredientsTraceabilities", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductsIngredientsRawMaterials_Ingredients_IngredientId",
-                        column: x => x.IngredientId,
-                        principalTable: "Ingredients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProductsIngredientsRawMaterials_ProductStocks_ProductId",
-                        column: x => x.ProductId,
+                        name: "FK_IngredientsTraceabilities_ProductStocks_ProductStockId",
+                        column: x => x.ProductStockId,
                         principalTable: "ProductStocks",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_ProductsIngredientsRawMaterials_RawMaterials_RawMaterialId",
-                        column: x => x.RawMaterialId,
-                        principalTable: "RawMaterials",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
-                name: "ProductTag",
+                name: "ProductTags",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -554,15 +541,15 @@ namespace Faitout.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ProductTag", x => x.Id);
+                    table.PrimaryKey("PK_ProductTags", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_ProductTag_ProductStocks_ProductId",
+                        name: "FK_ProductTags_ProductStocks_ProductId",
                         column: x => x.ProductId,
                         principalTable: "ProductStocks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_ProductTag_Tags_TagId",
+                        name: "FK_ProductTags_Tags_TagId",
                         column: x => x.TagId,
                         principalTable: "Tags",
                         principalColumn: "Id",
@@ -602,7 +589,7 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "StocksMove",
+                name: "StocksMoves",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
@@ -613,37 +600,17 @@ namespace Faitout.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_StocksMove", x => x.Id);
+                    table.PrimaryKey("PK_StocksMoves", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_StocksMove_ProductStocks_ProductStockId",
+                        name: "FK_StocksMoves_ProductStocks_ProductStockId",
                         column: x => x.ProductStockId,
                         principalTable: "ProductStocks",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_StocksMove_Providers_ProviderId",
+                        name: "FK_StocksMoves_Providers_ProviderId",
                         column: x => x.ProviderId,
                         principalTable: "Providers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "IngredientsTraceabilities",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(nullable: false),
-                    ComplementaryInformation = table.Column<string>(nullable: true),
-                    PicturePath = table.Column<string>(nullable: true),
-                    ProductIngredientRawMaterialId = table.Column<Guid>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_IngredientsTraceabilities", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_IngredientsTraceabilities_ProductsIngredientsRawMaterials_ProductIngredientRawMaterialId",
-                        column: x => x.ProductIngredientRawMaterialId,
-                        principalTable: "ProductsIngredientsRawMaterials",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -693,6 +660,11 @@ namespace Faitout.Migrations
                 column: "EatInVatId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Categories_ParentId",
+                table: "Categories",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Categories_TakeAwayVatId",
                 table: "Categories",
                 column: "TakeAwayVatId");
@@ -703,14 +675,24 @@ namespace Faitout.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ingredients_RecipeId",
+                name: "IX_Ingredients_ParentId",
                 table: "Ingredients",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IngredientsRecipesQuantities_IngredientId",
+                table: "IngredientsRecipesQuantities",
+                column: "IngredientId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IngredientsRecipesQuantities_RecipeId",
+                table: "IngredientsRecipesQuantities",
                 column: "RecipeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IngredientsTraceabilities_ProductIngredientRawMaterialId",
+                name: "IX_IngredientsTraceabilities_ProductStockId",
                 table: "IngredientsTraceabilities",
-                column: "ProductIngredientRawMaterialId");
+                column: "ProductStockId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_OrderLines_OrderId",
@@ -733,21 +715,6 @@ namespace Faitout.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductsIngredientsRawMaterials_IngredientId",
-                table: "ProductsIngredientsRawMaterials",
-                column: "IngredientId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductsIngredientsRawMaterials_ProductId",
-                table: "ProductsIngredientsRawMaterials",
-                column: "ProductId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ProductsIngredientsRawMaterials_RawMaterialId",
-                table: "ProductsIngredientsRawMaterials",
-                column: "RawMaterialId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_ProductStocks_CategoryId",
                 table: "ProductStocks",
                 column: "CategoryId");
@@ -763,19 +730,14 @@ namespace Faitout.Migrations
                 column: "RecipeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductTag_ProductId",
-                table: "ProductTag",
+                name: "IX_ProductTags_ProductId",
+                table: "ProductTags",
                 column: "ProductId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_ProductTag_TagId",
-                table: "ProductTag",
+                name: "IX_ProductTags_TagId",
+                table: "ProductTags",
                 column: "TagId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_RawMaterials_ProviderId",
-                table: "RawMaterials",
-                column: "ProviderId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_RecipesTags_ProductId",
@@ -793,24 +755,14 @@ namespace Faitout.Migrations
                 column: "TagId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StocksMove_ProductStockId",
-                table: "StocksMove",
+                name: "IX_StocksMoves_ProductStockId",
+                table: "StocksMoves",
                 column: "ProductStockId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_StocksMove_ProviderId",
-                table: "StocksMove",
+                name: "IX_StocksMoves_ProviderId",
+                table: "StocksMoves",
                 column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SubRawMaterialsIngredients_ProviderId",
-                table: "SubRawMaterialsIngredients",
-                column: "ProviderId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_SubRawMaterialsIngredients_RawMaterialId",
-                table: "SubRawMaterialsIngredients",
-                column: "RawMaterialId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TimeRange_OpenedDayId",
@@ -842,6 +794,9 @@ namespace Faitout.Migrations
                 name: "Discounts");
 
             migrationBuilder.DropTable(
+                name: "IngredientsRecipesQuantities");
+
+            migrationBuilder.DropTable(
                 name: "IngredientsTraceabilities");
 
             migrationBuilder.DropTable(
@@ -851,16 +806,13 @@ namespace Faitout.Migrations
                 name: "Payements");
 
             migrationBuilder.DropTable(
-                name: "ProductTag");
+                name: "ProductTags");
 
             migrationBuilder.DropTable(
                 name: "RecipesTags");
 
             migrationBuilder.DropTable(
-                name: "StocksMove");
-
-            migrationBuilder.DropTable(
-                name: "SubRawMaterialsIngredients");
+                name: "StocksMoves");
 
             migrationBuilder.DropTable(
                 name: "TimeRange");
@@ -869,7 +821,7 @@ namespace Faitout.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "ProductsIngredientsRawMaterials");
+                name: "Ingredients");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -878,16 +830,13 @@ namespace Faitout.Migrations
                 name: "Tags");
 
             migrationBuilder.DropTable(
-                name: "OpenedDays");
-
-            migrationBuilder.DropTable(
-                name: "Ingredients");
-
-            migrationBuilder.DropTable(
                 name: "ProductStocks");
 
             migrationBuilder.DropTable(
-                name: "RawMaterials");
+                name: "Providers");
+
+            migrationBuilder.DropTable(
+                name: "OpenedDays");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
@@ -899,10 +848,7 @@ namespace Faitout.Migrations
                 name: "Recipes");
 
             migrationBuilder.DropTable(
-                name: "Providers");
-
-            migrationBuilder.DropTable(
-                name: "Taxes");
+                name: "VATs");
         }
     }
 }

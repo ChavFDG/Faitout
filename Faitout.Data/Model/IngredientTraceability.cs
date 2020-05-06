@@ -9,17 +9,25 @@ namespace Faitout.Data.Model
     public class IngredientTraceability
     {
         [Key]
-        public Guid Id { get; set; }
+        public Guid Id { get; set; } = Guid.NewGuid();
+
+        [Display(Name = "Id du produit")]
+        public Guid ProductStockId { get; set; }
+        [Display(Name = "Produit")]
+        [ForeignKey(nameof(ProductStockId))]
+        public virtual ProductStock ProductStock { get; set; }
+
+        [NotMapped]
+        public Product Product
+        {
+            get { return ProductStock as Product; }
+            set { ProductStock = value; }
+        }
 
         [Display(Name = "Information complémentaire")]
         public string ComplementaryInformation { get; set; }
-        [Display(Name = "Chemin de l'image")]
-        public string PicturePath { get; set; }
 
-        [Display(Name = "Id de lien produit, matériel première, ingrédient")]
-        public Guid ProductIngredientRawMaterialId { get; set; }
-        [Display(Name = "Lien produit, matériel première, ingrédient")]
-        [ForeignKey(nameof(ProductIngredientRawMaterialId))]
-        public virtual ProductIngredientRawMaterial ProductIngredientRawMaterial { get; set; }
+        [Display(Name = "Image")]
+        public string Picture { get; set; }
     }
 }
