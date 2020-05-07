@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace Faitout.Data.Model
@@ -19,29 +20,18 @@ namespace Faitout.Data.Model
         [Display(Name = "Est bio")]
         public bool IsOrganic { get; set; }
 
-        //Dnas le cas de la viande de boeuf obligation d'indiquer l'origine
-        [Display(Name = "Origine de la viande")]
-        public string Origin { get; set; }
-
         [Display(Name = "Est un allergène")]
         public bool IsAllergen { get; set; }
-
-        [Display(Name = "Est un AOC")]
-        public bool IsAOC { get; set; }
-
-        [Display(Name = "Est un AOP")]
-        public bool IsAOP { get; set; }
 
         //Dans le cas d'un ingrédient ayant des sous ingrédients, image de l'étiquette
         [Display(Name = "Nom de image")]
         public string PictureName { get; set; }
 
-        public Guid? ParentId { get; set; }
-        [Display(Name = "Ingrédient parent")]
-        [ForeignKey(nameof(ParentId))]
-        public virtual Ingredient Parent { get; set; }
+        [Display(Name = "Ingrédients enfants")]
+        public virtual List<IngredientSubIngredientOrder> ChildsIngredients { get; set; } = new List<IngredientSubIngredientOrder>();
 
-        public virtual List<Ingredient> SubIngredients { get; set; } = new List<Ingredient>();
+        [Display(Name = "Ingrédients parents")]
+        public virtual List<IngredientSubIngredientOrder> ParentsIngredients { get; set; } = new List<IngredientSubIngredientOrder>();
 
         [Display(Name = "Recetes")]
         public List<IngredientRecipeQuantity> IngredientRecipeQuantity { get; set; } = new List<IngredientRecipeQuantity>();
@@ -49,6 +39,26 @@ namespace Faitout.Data.Model
         public override string ToString()
         {
             return Name;
+        }
+
+        public Ingredient Clone()
+        {
+            var clone = new Ingredient();
+            clone.Name = Name;
+            clone.ComplementaryInformations = ComplementaryInformations;
+            clone.IsOrganic = IsOrganic;
+            clone.IsAllergen = IsAllergen;
+            return clone;
+        }
+
+        public string ToLongString()
+        {
+            var toReturn = IsAllergen?Name.ToUpper():Name;
+            if (IsOrganic)
+                toReturn += " ᴮ";// ᵇ ᴮ 
+            if (!string.IsNullOrWhiteSpace(ComplementaryInformations))
+                toReturn += " (" + ComplementaryInformations +")";
+            return toReturn;
         }
     }
 }

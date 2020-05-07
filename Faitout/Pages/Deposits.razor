@@ -25,10 +25,10 @@ else
                 <MatTextField Label="Description" @bind-Value="@selectedDeposit.Description"></MatTextField>
                 <ValidationMessage For="@(()=> selectedDeposit.Description)" />
                 <MatNumericUpDownField Label="Prix" Step="0.01m" DecimalPlaces=2 Minimum="0" FieldType="MatNumericUpDownFieldType.Currency" @bind-Value="@selectedDeposit.Price"></MatNumericUpDownField>
-                <UploadFileDisplay Label="Image" ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
+                <UploadFileDisplay @ref="Uploder" Label="Image" ImageOnly="true" MultipleFile="false" @bind-FilesNames="images"/>
             </MatDialogContent>
             <MatDialogActions>
-                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; })">Annuler</MatButton>
+                <MatButton Type="button" OnClick="@(e => { dialogIsOpen = false; Uploder.Reset(); })">Annuler</MatButton>
                 <MatButton Type="submit">Sauvegarder</MatButton>
             </MatDialogActions>
         </EditForm>
@@ -49,14 +49,14 @@ else
         <tbody>
             @foreach (var deposit in deposits.OrderBy(x => x.Price))
             {
-                <tr>
-                    <td><RadzenImage Path="@deposit.PicturesName.GetFilePath()" Style="width:50px" /></td>
-                    <td>@deposit.Name</td>
-                    <td>@deposit.Description</td>
-                    <td>@deposit.Price €</td>
-                    <td>@deposit.CurrentStock</td>
-                    <td><MatButton OnClick="@(e => { selectedDeposit = deposit;  dialogIsOpen = true; })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(deposit); })">Supprimer</MatButton></td>
-                </tr>
+            <tr>
+                <td><RadzenImage Path="@PathTools.GetFilePath(deposit.Pictures.FirstOrDefault())" Style="width:75px" /></td>
+                <td>@deposit.Name</td>
+                <td>@deposit.Description</td>
+                <td>@deposit.Price €</td>
+                <td>@deposit.CurrentStock</td>
+                <td><MatButton OnClick="@(e => { Modify(deposit); })">Modifier</MatButton> | <MatButton OnClick="@(e => { ConfirmDelete(deposit); })">Supprimer</MatButton></td>
+            </tr>
             }
         </tbody>
     </table>
@@ -65,7 +65,9 @@ else
 
 @code {
 
-    public List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+    UploadFileDisplay Uploder;
+
+    List<string> images = new List<string>();
 
     private List<Deposit> deposits;
 
@@ -85,19 +87,19 @@ else
     Deposit selectedDeposit = new Deposit();
     bool dialogIsOpen = false;
 
+    void Modify(Deposit deposit)
+    {
+        selectedDeposit = deposit;
+        images = deposit.Pictures;
+        dialogIsOpen = true;
+    }
+
     void Save()
     {
-        if (SelectedImages.Count != 0)
-        {
-            if (!String.IsNullOrWhiteSpace(selectedDeposit.PicturesName))
-                UploadService.Remove(selectedDeposit.PicturesName);
-            selectedDeposit.PicturesName = SelectedImages.First().InternalFileName;
-
-        }
+        selectedDeposit.Pictures = Uploder.SaveAndReset();
         Toaster.NotifyResult(DepositService.Save(selectedDeposit),selectedDeposit.ToString());
         LoadDeposits();
         dialogIsOpen = false;
-        SelectedImages.Clear();
     }
 
     void ConfirmDelete(Deposit deposit)

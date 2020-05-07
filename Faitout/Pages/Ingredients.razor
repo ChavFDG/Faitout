@@ -46,9 +46,6 @@ else
                 <th>Informations</th>
                 <th>Bio</th>
                 <th>Allergene</th>
-                <th>AOP</th>
-                <th>AOC</th>
-                <th>Origine</th>
                 <th>Ingrédients</th>
                 <th>Actions</th>
             </tr>
@@ -61,10 +58,7 @@ else
                 <td>@ingredient.ComplementaryInformations</td>
                 <td>@ingredient.IsOrganic</td>
                 <td>@ingredient.IsAllergen</td>
-                <td>@ingredient.IsAOP</td>
-                <td>@ingredient.IsAOC</td>
-                <td>@ingredient.Origin</td>
-                <td><MatButton OnClick="@(e => { selectedIngredient = ingredient;  dialogIsOpen = true; })">Voir les @ingredient.SubIngredients.Count()</MatButton></td>
+                <td><MatButton OnClick="@(e => { selectedIngredient = ingredient;  dialogIsOpen = true; })">Voir les @ingredient.ChildsIngredients.Count()</MatButton></td>
                 <td>
                     <MatButton OnClick="@(e => { selectedIngredient = ingredient;  dialogIsOpen = true; })">Modifier</MatButton> |
                     <MatButton Disabled="@(ingredient.IngredientRecipeQuantity.Any())" OnClick="@(e => { ConfirmDelete(ingredient); })">Supprimer</MatButton>

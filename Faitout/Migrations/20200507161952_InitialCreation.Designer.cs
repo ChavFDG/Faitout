@@ -10,8 +10,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Faitout.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20200505142850_InitialCreator")]
-    partial class InitialCreator
+    [Migration("20200507161952_InitialCreation")]
+    partial class InitialCreation
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -141,12 +141,6 @@ namespace Faitout.Migrations
                     b.Property<string>("ComplementaryInformations")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<bool>("IsAOC")
-                        .HasColumnType("bit");
-
-                    b.Property<bool>("IsAOP")
-                        .HasColumnType("bit");
-
                     b.Property<bool>("IsAllergen")
                         .HasColumnType("bit");
 
@@ -156,18 +150,10 @@ namespace Faitout.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Origin")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
                     b.Property<string>("PictureName")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("ParentId");
 
                     b.ToTable("Ingredients");
                 });
@@ -197,6 +183,33 @@ namespace Faitout.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("IngredientsRecipesQuantities");
+                });
+
+            modelBuilder.Entity("Faitout.Data.Model.IngredientSubIngredientOrder", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid?>("ChildId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid?>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<double>("Percentage")
+                        .HasColumnType("float");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ChildId");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("IngredientsSubIngredientsOrders");
                 });
 
             modelBuilder.Entity("Faitout.Data.Model.IngredientTraceability", b =>
@@ -330,6 +343,9 @@ namespace Faitout.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ConcatenatedPicturesNames")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int>("CurrentStock")
                         .HasColumnType("int");
 
@@ -356,9 +372,6 @@ namespace Faitout.Migrations
 
                     b.Property<decimal>("OnlinePrice")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("PicturesName")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
@@ -429,6 +442,9 @@ namespace Faitout.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ConcatenatedPicturesNames")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -441,9 +457,6 @@ namespace Faitout.Migrations
 
                     b.Property<TimeSpan>("OvenTime")
                         .HasColumnType("time");
-
-                    b.Property<string>("PicturesNames")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
@@ -876,13 +889,6 @@ namespace Faitout.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Faitout.Data.Model.Ingredient", b =>
-                {
-                    b.HasOne("Faitout.Data.Model.Ingredient", "Parent")
-                        .WithMany("SubIngredients")
-                        .HasForeignKey("ParentId");
-                });
-
             modelBuilder.Entity("Faitout.Data.Model.IngredientRecipeQuantity", b =>
                 {
                     b.HasOne("Faitout.Data.Model.Ingredient", "Ingredient")
@@ -896,6 +902,19 @@ namespace Faitout.Migrations
                         .HasForeignKey("RecipeId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Faitout.Data.Model.IngredientSubIngredientOrder", b =>
+                {
+                    b.HasOne("Faitout.Data.Model.Ingredient", "Child")
+                        .WithMany("ParentsIngredients")
+                        .HasForeignKey("ChildId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("Faitout.Data.Model.Ingredient", "Parent")
+                        .WithMany("ChildsIngredients")
+                        .HasForeignKey("ParentId")
+                        .OnDelete(DeleteBehavior.Restrict);
                 });
 
             modelBuilder.Entity("Faitout.Data.Model.IngredientTraceability", b =>

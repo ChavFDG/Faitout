@@ -11,9 +11,10 @@ namespace Faitout.Services
 {
     public class DepositService : BaseService
     {
-        public DepositService(ApplicationDbContext context) : base(context)
+        protected readonly UploadService _uploadService;
+        public DepositService(ApplicationDbContext context, UploadService uploadService) : base(context)
         {
-
+            _uploadService = uploadService;
         }
         public List<Deposit> GetDeposits()
         {
@@ -48,6 +49,7 @@ namespace Faitout.Services
             Deposit depositTodelete = _context.Deposits.FirstOrDefault(x => x.Id == deposit.Id);
             if (depositTodelete != null)
             {
+                depositTodelete.Pictures.ForEach(x => _uploadService.Remove(x));
                 _context.Deposits.Remove(depositTodelete);
                 _context.SaveChanges();
             }

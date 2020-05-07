@@ -12,9 +12,10 @@ namespace Faitout.Services
 {
     public class RecipeService : BaseService
     {
-        public RecipeService(ApplicationDbContext context) : base(context)
+        protected readonly UploadService _uploadService;
+        public RecipeService(ApplicationDbContext context, UploadService uploadService) : base(context)
         {
-
+            _uploadService = uploadService;
         }
         public List<Recipe> GetRecipes()
         {
@@ -23,25 +24,60 @@ namespace Faitout.Services
                                    .ToList();
         }
 
-        public Result Save(Recipe recipe)
+        public Result Save(Recipe recipe, List<RecipeTag> rtToRemove, List<RecipeTag> rtToAdd, List<IngredientRecipeQuantity> irqToRemove, List<IngredientRecipeQuantity> irqToAdd)
         {
             if (recipe is null)
                 return new Result("Deposit est null");
 
 
-            if (_context.Recipes.Any(x => x.Id == recipe.Id))
-            {
-                //Modifier
-                _context.SaveChanges();
-                return new Result();
-            }
-            else
-            {
-                //Créer
+            if (!_context.Recipes.Any(x => x.Id == recipe.Id))
                 _context.Recipes.Add(recipe);
-                _context.SaveChanges();
-                return new Result();
+
+            foreach (var rt in rtToRemove)
+            {
+                if (_context.RecipesTags.Any(x => x.Id == rt.Id))
+                    _context.RecipesTags.Remove(rt);
             }
+            foreach (var rt in rtToAdd)
+            {
+                if (!_context.RecipesTags.Any(x => x.Id == rt.Id))
+                    _context.Entry(rt).State = EntityState.Added;
+            }
+            foreach (var irq in irqToRemove)
+            {
+                if (_context.IngredientsRecipesQuantities.Any(x => x.Id == irq.Id))
+                    _context.IngredientsRecipesQuantities.Remove(irq);
+            }
+            foreach (var irq in irqToAdd)
+            {
+                //If ingredient don't exist add it
+                if (!_context.Ingredients.Any(x => x.Id == irq.IngredientId))
+                    _context.Entry(irq.IngredientId).State = EntityState.Added;
+
+                if (!_context.IngredientsRecipesQuantities.Any(x => x.Id == irq.Id))
+                    _context.Entry(irq).State = EntityState.Added;
+            }
+
+            foreach (var ingredient in _context.ChangeTracker.Entries<Ingredient>().Where(x=>x.State == EntityState.Modified && recipe.IngredientRecipeQuantity.Any(irq=>irq.IngredientId == x.Entity.Id)))
+            {
+                //If one ingredient value has been modified create a new one to don't brake the unique relation
+                foreach (var prop in ingredient.Properties)
+                {
+                    if(prop.IsModified)
+                    {
+                        //Create clone and add it to bdd
+                        var clone = ingredient.Entity.Clone();
+                        _context.Entry(clone).State = EntityState.Added;
+                        //Change IRQ ingredient id to clone one
+                        recipe.IngredientRecipeQuantity.First(x => x.IngredientId == ingredient.Entity.Id).IngredientId = clone.Id;
+                        //Don't change original ingredient to don't breack unicities
+                        ingredient.Reload();
+                        break;
+                    }
+                }
+            }
+            _context.SaveChanges();
+            return new Result();
         }
 
         public Result Delete(Recipe deposit)
@@ -51,6 +87,7 @@ namespace Faitout.Services
             Recipe recipeToDelete = _context.Recipes.FirstOrDefault(x => x.Id == deposit.Id);
             if (recipeToDelete != null)
             {
+                recipeToDelete.Pictures.ForEach(x => _uploadService.Remove(x));
                 _context.Recipes.Remove(recipeToDelete);
                 _context.SaveChanges();
             }

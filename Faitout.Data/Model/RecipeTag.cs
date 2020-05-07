@@ -8,6 +8,20 @@ namespace Faitout.Data.Model
 {
     public class RecipeTag
     {
+
+        public RecipeTag()
+        {
+
+        }
+        public RecipeTag(Tag tag, Recipe recipe)
+        {
+            Tag = tag;
+            TagId = tag.Id;
+            tag.RecipesTags.Add(this);
+            Recipe = recipe;
+            RecipeId = recipe.Id;
+            Recipe.RecipesTags.Add(this);
+        }
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
 

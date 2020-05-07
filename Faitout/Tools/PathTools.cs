@@ -12,6 +12,8 @@ namespace Faitout.Tools
     {
         public static string GetFilePath(this string fileName)
         {
+            if (string.IsNullOrWhiteSpace(fileName))
+                return null;
             return "upload/" +fileName;
 
         }

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Faitout.Migrations
 {
-    public partial class InitialCreator : Migration
+    public partial class InitialCreation : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -82,22 +82,12 @@ namespace Faitout.Migrations
                     Name = table.Column<string>(nullable: true),
                     ComplementaryInformations = table.Column<string>(nullable: true),
                     IsOrganic = table.Column<bool>(nullable: false),
-                    Origin = table.Column<string>(nullable: true),
                     IsAllergen = table.Column<bool>(nullable: false),
-                    IsAOC = table.Column<bool>(nullable: false),
-                    IsAOP = table.Column<bool>(nullable: false),
-                    PictureName = table.Column<string>(nullable: true),
-                    ParentId = table.Column<Guid>(nullable: true)
+                    PictureName = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Ingredients", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Ingredients_Ingredients_ParentId",
-                        column: x => x.ParentId,
-                        principalTable: "Ingredients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -145,7 +135,7 @@ namespace Faitout.Migrations
                     OvenTime = table.Column<TimeSpan>(nullable: false),
                     Steps = table.Column<string>(nullable: true),
                     Quantity = table.Column<int>(nullable: false),
-                    PicturesNames = table.Column<string>(nullable: true)
+                    ConcatenatedPicturesNames = table.Column<string>(nullable: true)
                 },
                 constraints: table =>
                 {
@@ -315,6 +305,33 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "IngredientsSubIngredientsOrders",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(nullable: false),
+                    Order = table.Column<int>(nullable: false),
+                    Percentage = table.Column<double>(nullable: false),
+                    ParentId = table.Column<Guid>(nullable: true),
+                    ChildId = table.Column<Guid>(nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_IngredientsSubIngredientsOrders", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_IngredientsSubIngredientsOrders_Ingredients_ChildId",
+                        column: x => x.ChildId,
+                        principalTable: "Ingredients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_IngredientsSubIngredientsOrders_Ingredients_ParentId",
+                        column: x => x.ParentId,
+                        principalTable: "Ingredients",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "TimeRange",
                 columns: table => new
                 {
@@ -471,7 +488,7 @@ namespace Faitout.Migrations
                     CurrentStock = table.Column<int>(nullable: false),
                     Price = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     OnlinePrice = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
-                    PicturesName = table.Column<string>(nullable: true),
+                    ConcatenatedPicturesNames = table.Column<string>(nullable: true),
                     IsArchive = table.Column<bool>(nullable: false),
                     Enable = table.Column<bool>(nullable: false),
                     EnableOnLine = table.Column<bool>(nullable: false),
@@ -675,11 +692,6 @@ namespace Faitout.Migrations
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ingredients_ParentId",
-                table: "Ingredients",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_IngredientsRecipesQuantities_IngredientId",
                 table: "IngredientsRecipesQuantities",
                 column: "IngredientId");
@@ -688,6 +700,16 @@ namespace Faitout.Migrations
                 name: "IX_IngredientsRecipesQuantities_RecipeId",
                 table: "IngredientsRecipesQuantities",
                 column: "RecipeId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IngredientsSubIngredientsOrders_ChildId",
+                table: "IngredientsSubIngredientsOrders",
+                column: "ChildId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_IngredientsSubIngredientsOrders_ParentId",
+                table: "IngredientsSubIngredientsOrders",
+                column: "ParentId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_IngredientsTraceabilities_ProductStockId",
@@ -795,6 +817,9 @@ namespace Faitout.Migrations
 
             migrationBuilder.DropTable(
                 name: "IngredientsRecipesQuantities");
+
+            migrationBuilder.DropTable(
+                name: "IngredientsSubIngredientsOrders");
 
             migrationBuilder.DropTable(
                 name: "IngredientsTraceabilities");

@@ -18,7 +18,7 @@ namespace Faitout.Services
         }
         public List<Ingredient> GetIngredients()
         {
-            return _context.Ingredients.Include(x=>x.SubIngredients).ToList();
+            return _context.Ingredients.Include(x=>x.ChildsIngredients).ToList();
         }
 
         public Result Save(Ingredient ingredient)

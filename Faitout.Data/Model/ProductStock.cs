@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Linq;
 using System.Text;
 
 namespace Faitout.Data.Model
@@ -31,8 +32,31 @@ namespace Faitout.Data.Model
         [Column(TypeName = "decimal(18,2)")]
         public decimal OnlinePrice { get; set; }
 
+        public string ConcatenatedPicturesNames { get; set; }
+
         [Display(Name = "Nom des images")]
-        public string PicturesName { get; set; }
+        [NotMapped]
+        public List<string> Pictures
+        {
+            get
+            {
+                List<string> toReturn = ConcatenatedPicturesNames.Split(';').ToList();
+                toReturn.RemoveAll(x => String.IsNullOrWhiteSpace(x));
+                return toReturn;
+            }
+            set
+            {
+                ConcatenatedPicturesNames = "";
+                if (value.Count != 0)
+                {
+                    foreach (var picture in value)
+                    {
+                        ConcatenatedPicturesNames += picture + ";";
+                    }
+                    ConcatenatedPicturesNames.Remove(ConcatenatedPicturesNames.Count() - 1);
+                }
+            }
+        }
 
         [Display(Name = "Archivé")]
         public bool IsArchive { get; set; }

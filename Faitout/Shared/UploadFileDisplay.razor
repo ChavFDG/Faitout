@@ -3,14 +3,14 @@
 
 <p>@Label</p>
 <MatFileUpload Label="Déposer ou choisir" OnChange="@FilesReadyForUpload"></MatFileUpload>
-@foreach (var image in SelectedImages)
+@foreach (var file in _files.Where(x=>x.Show))
 {
     <p>
-        @if (image.IsImage())
+        @if (file.IsImage())
         {
-            <RadzenImage Path="@image.InternalFileName.GetFilePath()" Style="width:50px" />
+            <RadzenImage Path="@file.InternalFileName.GetFilePath()" Style="width:50px" />
         }
-        @image.UserFileName <MatButton Icon="close" Type="button" @onclick="@(e=> { SelectedImages.Remove(image); UploadService.Remove(image.InternalFileName); })" />
+        @file.UserFileName <MatButton Icon="close" Type="button" @onclick="@(e=> { file.Show = false; FilesNames.Remove(file.InternalFileName); FilesNamesChanged.InvokeAsync(FilesNames); })" />
     </p>
 }
 
@@ -26,8 +26,53 @@
     [Parameter]
     public bool MultipleFile { get; set; } = false;
 
+    private List<UploadedFileInfo> _files { get; set; } = new List<UploadedFileInfo>();
+
+    private List<string>  _filesNames;
+
     [Parameter]
-    public List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+    public List<string> FilesNames
+    {
+        get => _filesNames;
+        set
+        {
+            if (_filesNames == value) return;
+            _filesNames = value;
+
+            foreach (var name in value)
+            {
+                if (!_files.Any(x => x.InternalFileName == name))
+                    _files.Add(new UploadedFileInfo(name));
+            }
+
+            FilesNamesChanged.InvokeAsync(value);
+        }
+    }
+
+    [Parameter]
+    public EventCallback<List<string>> FilesNamesChanged { get; set; }
+
+
+    public List<string> GetFilesName()
+    {
+        return _files.ToStringList();
+    }
+
+    public List<string> SaveAndReset()
+    {
+        List<string> toReturn = _files.ToStringList();
+        //Keep the show and remove the rest
+        _files.Where(x => !x.Show).ToList().ForEach(x => UploadService.Remove(x.InternalFileName));
+        return toReturn;
+    }
+
+    public void Reset()
+    {
+        //Keep the original file remove the rest
+        _files.Where(x => !x.OriginalFile).ToList().ForEach(x => UploadService.Remove(x.InternalFileName));
+        _files.Clear();
+        FilesNames.Clear();
+    }
 
     async Task FilesReadyForUpload(IMatFileUploadEntry[] files)
     {
@@ -39,11 +84,9 @@
                 Toaster.Add("Veuillez selectionner qu'un seul fichier ", MatToastType.Warning, "Fichiers multiples");
                 return;
             }
-            else if (SelectedImages.Count == 1)
+            else if (_files.Where(x => x.Show).ToList().Count == 1)
             {
-                //Remove preview image
-                UploadService.Remove(SelectedImages.First().InternalFileName);
-                SelectedImages = new List<UploadedFileInfo>();
+                _files.Where(x => x.Show).First().Show = false;
             }
 
         try
@@ -61,7 +104,7 @@
                     continue;
                 }
 
-                SelectedImages.Add(await UploadService.WriteFile(file));
+                this._files.Add(await UploadService.WriteFile(file));
             }
         }
         catch (Exception e)

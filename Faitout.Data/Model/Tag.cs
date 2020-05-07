@@ -9,6 +9,7 @@ namespace Faitout.Data.Model
     {
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
+
         [Display(Name = "Nom")]
         [Required(ErrorMessage = "Veuillez saisir un nom")]
         public string Name { get; set; }

@@ -24,6 +24,7 @@ namespace Faitout.Data
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientRecipeQuantity> IngredientsRecipesQuantities { get; set; }
         public DbSet<IngredientTraceability> IngredientsTraceabilities { get; set; }
+        public DbSet<IngredientSubIngredientOrder> IngredientsSubIngredientsOrders { get; set; }
         public DbSet<OpenedDay> OpenedDays { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
@@ -45,8 +46,8 @@ namespace Faitout.Data
 
             builder.Entity<Category>()
                 .HasOne(b => b.EatInVat)
-                .WithMany(a=>a.EatInCategories)
-                .OnDelete(DeleteBehavior.Restrict); 
+                .WithMany(a => a.EatInCategories)
+                .OnDelete(DeleteBehavior.Restrict);
             builder.Entity<Category>()
                 .HasOne(b => b.TakeAwayVat)
                 .WithMany(a => a.TakeAwayCategories)
@@ -68,9 +69,21 @@ namespace Faitout.Data
             .HasForeignKey(irq => irq.IngredientId);
 
             builder.Entity<IngredientRecipeQuantity>()
-            .HasOne(r => r.Recipe)
+            .HasOne(irq => irq.Recipe)
             .WithMany(i => i.IngredientRecipeQuantity)
             .HasForeignKey(r => r.RecipeId);
+
+            builder.Entity<IngredientSubIngredientOrder>()
+           .HasOne(isi => isi.Parent)
+           .WithMany(i => i.ChildsIngredients)
+           .HasForeignKey(isi => isi.ParentId)
+           .OnDelete(DeleteBehavior.Restrict);
+
+            builder.Entity<IngredientSubIngredientOrder>()
+           .HasOne(isi => isi.Child)
+           .WithMany(i => i.ParentsIngredients)
+           .HasForeignKey(isi => isi.ChildId)
+           .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Category>()
                         .HasOne(x => x.Parent)
@@ -79,9 +92,9 @@ namespace Faitout.Data
                         .OnDelete(DeleteBehavior.Restrict);
 
             builder.Entity<Product>()
-                .HasOne(b => b.Deposit)
-                .WithMany(a => a.Products)
-                .OnDelete(DeleteBehavior.Restrict);
+                        .HasOne(b => b.Deposit)
+                        .WithMany(a => a.Products)
+                        .OnDelete(DeleteBehavior.Restrict);
 
         }
 
@@ -110,9 +123,9 @@ namespace Faitout.Data
             context.Add(new VAT() { Tax = 0 });
             context.Add(new VAT() { Tax = 0.055m });
             context.Add(new VAT() { Tax = 0.1m });
-            context.Add(new VAT() { Tax = 0.2m});
+            context.Add(new VAT() { Tax = 0.2m });
             //Tags
-            context.Add(new Tag() { Name = "Chaud" , Description ="Ce plat peut être consommé chaud", Color= "#ff3333" });
+            context.Add(new Tag() { Name = "Chaud", Description = "Ce plat peut être consommé chaud", Color = "#ff3333" });
             context.Add(new Tag() { Name = "Froid", Description = "Ce plat peut être consommé froid", Color = "#3385ff" });
             context.Add(new Tag() { Name = "Carné", Description = "Contient de la viande", Color = "#ff0000" });
             context.Add(new Tag() { Name = "Végé", Description = "Ce plat est végétarien", Color = "#5cd65c" });

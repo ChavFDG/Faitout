@@ -20,7 +20,6 @@ else
         <thead>
             <tr>
                 <th></th>
-                @*Picture*@
                 <th>Nom</th>
                 <th>Tags</th>
                 <th>Action</th>
@@ -30,7 +29,9 @@ else
             @foreach (var recipe in recipes.OrderBy(x => x.Name))
             {
                 <tr>
-                    <td><RadzenImage Path="@recipe.PicturesNames.GetFilePath()" Style="width:50px" /></td>
+                    <td>
+                        <RadzenImage Path="@PathTools.GetFilePath(recipe.Pictures.FirstOrDefault())" Style="width:75px" />
+                    </td>
                     <td>@recipe.Name</td>
                     <td>
                         @foreach (var rt in recipe.RecipesTags)
@@ -39,7 +40,7 @@ else
                         }
                     </td>
                     <td>
-                        <MatButton OnClick="@(e => { selectedRecipe = recipe;  Modal.Open(); })">Modifier</MatButton> |
+                        <MatButton OnClick="@(e => { Modify(recipe); })">Modifier</MatButton> |
                         <MatButton OnClick="@(e => { ConfirmDelete(recipe); })">Supprimer</MatButton>
                     </td>
                 </tr>
@@ -52,46 +53,67 @@ else
 
 
     <FtModal @ref="Modal" Title="Recette">
-            <EditForm Model="@selectedRecipe" OnValidSubmit="@Save">
-                <FtModalContent>
-                    <DataAnnotationsValidator />
-                    <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name"></MatTextField>
+        <EditForm Model="@selectedRecipe" OnValidSubmit="@Save">
+            <FtModalContent>
+                <DataAnnotationsValidator />
+                <RadzenFieldset Text="Informations">
+                    <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name" FullWidth="true"></MatTextField>
                     <ValidationMessage For="@(()=> selectedRecipe.Name)" />
-                    <h3>Tag</h3>
+                    &nbsp;
+                    <UploadFileDisplay @ref="Uploder" Label="Photos de la recette" ImageOnly="true" MultipleFile="true" @bind-FilesNames="@SelectedImages" />
+                    &nbsp;
+                    <p>Tag</p>
                     <p>Cliquer sur un tag pour l'ajouter</p>
                     <div class="row">
                         <div class="col">
                             <RadzenFieldset Text="Tag disponible">
-                                @foreach (var tag in tempNotSelectedTags)
+                                @foreach (var tag in notSelectedTags)
                                 {
-                                    <FtTag Tag="tag" OnClick="@(() => { tempNotSelectedTags.Remove(tag); tempSelectedTags.Add(tag); })" />
+                                    <FtTag Tag="tag" OnClick="@(() => { AddTag(tag); })" />
                                 }
 
                             </RadzenFieldset>
                         </div>
                         <div class="col">
                             <RadzenFieldset Text="Tag de la recette">
-                                @foreach (var tag in tempSelectedTags)
+                                @foreach (var rt in selectedRecipe.RecipesTags)
                                 {
-                                    <FtTag Tag="tag" OnClick="@(()=>{ tempNotSelectedTags.Add(tag); tempSelectedTags.Remove(tag); })" />
+                                    <FtTag Tag="rt.Tag" OnClick="@(()=>{ RemoveTag(rt); })" />
                                 }
                             </RadzenFieldset>
                         </div>
                     </div>
-                    <h3>Ingrédients</h3>
+                </RadzenFieldset>
+                <RadzenFieldset Text="Ingrédients">
                     <p>Ajouter et choisissez les ingrédients</p>
-                        <MatAutocompleteForm @ref="AutoCompleteForm"
-                                             Items="@autoCompleteIngredientList"
-                                             TItem="Ingredient"
-                                             ValueChanged="SelectedIngredientChanged"
-                                             @onkeypress="IngredientKeyPressed"
-                                             Label="Saisir un ingrédient" />
-                        <RadzenButton Click="@AddNewIngredientFromUserTyping" Type="button" Text="Ajouter"></RadzenButton><div class="row">
+                    <div class="row">
+                        <div class="col">
+                            <MatAutocompleteForm @ref="AutoCompleteForm"
+                                                 Items="@autoCompleteIngredientList"
+                                                 TItem="Ingredient"
+                                                 ValueChanged="SelectedIngredientChanged"
+                                                 @onkeypress="IngredientKeyPressed"
+                                                 Label="Saisir un ingrédient"
+                                                 FullWidth="true">
+                                <ItemTemplate Context="ingredient">
+                                    <div style="display: flex; flex-direction: row; width: 100%;">
+                                        @ingredient.ToLongString()
+                                    </div>
+                                </ItemTemplate>
+                            </MatAutocompleteForm>
+                        </div>
+                        <div class="col-md-auto">
+                            <MatFAB OnClick="@AddNewIngredientFromUserTyping" Type="button" Icon="@MatIconNames.Add" />
+                        </div>
+                    </div>
+                    <div class="row">
+                        @if (selectedRecipe.IngredientRecipeQuantity.Any())
+                        {
                             <table class="table">
                                 <thead>
                                     <tr>
                                         <th>Nom</th>
-                                        <th >Quantity</th>
+                                        <th>Quantity</th>
                                         <th>Est bio</th>
                                         <th>Allergène</th>
                                         <th>Informations complémentaire</th>
@@ -100,35 +122,40 @@ else
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach (var ingredient in tempIngredients.OrderBy(x => x.Name))
+                                    @foreach (var irq in selectedRecipe.IngredientRecipeQuantity.OrderBy(x => x.Quantity))
                                     {
-                                        var irq = ingredient.IngredientRecipeQuantity.First(x => x.RecipeId == selectedRecipe.Id);
                                         <tr>
-                                            <td>@ingredient.Name</td>
+                                            <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
                                             <td>
-                                                    <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
-                                                    <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities"></MatSelectItem>
+                                                <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
+                                                <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities" />
                                             </td>
-                                            <td><FtToggle @bind-Value="ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
-                                            <td><FtToggle @bind-Value="ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
-                                            <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@ingredient.Origin" /></td>
-                                            <td><MatButton Type="button" Disabled="@(!ingredient.SubIngredients.Any())">@(ingredient.SubIngredients.Count()) sous ingrédients</MatButton></td>
-                                            <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(ingredient); })">Retirer</MatButton></td>
+                                            <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
+                                            <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
+                                            <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
+                                            @*<td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>*@
+                                            <td>
+                                            </td>
+                                            <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
+
                                         </tr>
                                     }
                                 </tbody>
                             </table>
-                        </div>
-                    <UploadFileDisplay Label="Image" ImageOnly="true" MultipleFile="false" SelectedImages="@SelectedImages" />
-
-                </FtModalContent>
-                <FtModalFooter>
-                    <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-                    <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
-                    <MatButton Type="submit">Sauvegarder</MatButton>
-                </FtModalFooter>
-            </EditForm>
-        </FtModal>
+                        }
+                    </div>
+                    <div class="row">
+                        <MatTextField @bind-Value="@selectedRecipe.Steps" Dense="true" Label="Étapes" TextArea="true" HelperText="Saisir les étapes de la recette" FullWidth="true" />
+                    </div>
+                </RadzenFieldset>
+            </FtModalContent>
+            <FtModalFooter>
+                <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+                <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
+                <MatButton Type="submit">Sauvegarder</MatButton>
+            </FtModalFooter>
+        </EditForm>
+    </FtModal>
 }
 
 
@@ -140,14 +167,29 @@ else
 
     #region Tag management
     List<Tag> Tags = new List<Tag>();
-    List<Tag> tempNotSelectedTags = new List<Tag>();
-    List<Tag> tempSelectedTags = new List<Tag>();
-
-    void InitTempsTags()
+    List<Tag> notSelectedTags
     {
-        tempNotSelectedTags = new List<Tag>();
-        tempNotSelectedTags.AddRange(Tags);
-        tempSelectedTags = new List<Tag>();
+        get
+        {
+            List<Tag> toReturn = new List<Tag>();
+            foreach (var tag in Tags)
+                if (!selectedRecipe.RecipesTags.Any(x => x.TagId == tag.Id))
+                    toReturn.Add(tag);
+            return toReturn;
+        }
+
+    }
+
+    void RemoveTag(RecipeTag rt)
+    {
+        selectedRecipe.RecipesTags.Remove(rt);
+        tempRemoveRt.Add(rt);
+    }
+
+    void AddTag(Tag tag)
+    {
+        var rt = new RecipeTag(tag, selectedRecipe);
+        tempAddRt.Add(rt);
     }
 
     #endregion Tag management
@@ -155,7 +197,6 @@ else
     #region Ingredient management
 
     List<Ingredient> Ingredients = new List<Ingredient>();
-    List<Ingredient> tempIngredients = new List<Ingredient>();
 
     List<Ingredient> autoCompleteIngredientList
     {
@@ -163,30 +204,17 @@ else
         {
             List<Ingredient> toReturn = new List<Ingredient>();
             foreach (var ingredient in Ingredients)
-                if (!tempIngredients.Any(x => x.Id == ingredient.Id))
+                if (!selectedRecipe.IngredientRecipeQuantity.Any(x => x.IngredientId == ingredient.Id))
                     toReturn.Add(ingredient);
             return toReturn;
         }
     }
 
-    List<IngredientRecipeQuantity> tempIngredientsRecipesQuantities = new List<IngredientRecipeQuantity>();
-
     public MatAutocompleteForm<Ingredient> AutoCompleteForm { get; set; }
-
-    void InitIngredientsTags()
-    {
-        tempIngredients = new List<Ingredient>();
-    }
 
     void SelectedIngredientChanged(Ingredient ingredient)
     {
-        AddTempIngredient(ingredient);
-    }
-
-    void CreateIngredientRecipeQuantity(Ingredient ingredient)
-    {
-        IngredientRecipeQuantity tempIRQ = new IngredientRecipeQuantity(ingredient, selectedRecipe);
-        tempIngredientsRecipesQuantities.Add(tempIRQ);
+        AddIngredient(ingredient);
     }
 
     void IngredientKeyPressed(KeyboardEventArgs args)
@@ -196,60 +224,93 @@ else
             AddNewIngredientFromUserTyping();
         }
     }
-
-    void RemoveIngredient(Ingredient ingredient)
-    {
-        var irq = ingredient.IngredientRecipeQuantity.First(x => x.RecipeId == selectedRecipe.Id);
-        tempIngredients.Remove(ingredient);
-        ingredient.IngredientRecipeQuantity.Remove(irq);
-        selectedRecipe.IngredientRecipeQuantity.Remove(irq);
-        tempIngredientsRecipesQuantities.Remove(irq);
-    }
-
     void AddNewIngredientFromUserTyping()
     {
         if (!string.IsNullOrWhiteSpace(AutoCompleteForm.StringValue))
         {
-            AddTempIngredient(new Ingredient() { Name = AutoCompleteForm.StringValue });
+            AddIngredient(new Ingredient() { Name = AutoCompleteForm.StringValue });
         }
     }
 
-    void AddTempIngredient(Ingredient ingredient)
+    void AddIngredient(Ingredient ingredient)
     {
-        CreateIngredientRecipeQuantity(ingredient);
-        tempIngredients.Add(ingredient);
+        IngredientRecipeQuantity irq = new IngredientRecipeQuantity(ingredient, selectedRecipe);
+        tempAddIrq.Add(irq);
         AutoCompleteForm.StringValue = "";
+    }
+
+    void RemoveIngredient(IngredientRecipeQuantity irq)
+    {
+        tempRemoveIrq.Add(irq);
+        selectedRecipe.IngredientRecipeQuantity.Remove(irq);
     }
 
     #endregion Ingredient management
 
+    #region Add modify RecipeTag management
 
-    List<UploadedFileInfo> SelectedImages { get; set; } = new List<UploadedFileInfo>();
+    List<RecipeTag> tempRemoveRt = new List<RecipeTag>();
+    List<RecipeTag> tempAddRt = new List<RecipeTag>();
+
+    #endregion Add modify RecipeTag management
+
+    #region IngredientRecipeQuantity management
+
+    List<IngredientRecipeQuantity> tempRemoveIrq = new List<IngredientRecipeQuantity>();
+    List<IngredientRecipeQuantity> tempAddIrq = new List<IngredientRecipeQuantity>();
+
+    #endregion IngredientRecipeQuantity management
+
+    #region  IngredientSubIngredientOrder management
+
+    void EditSubIngredients(Ingredient ingredient)
+    {
+
+    }
+
+    #endregion IngredientSubIngredientOrder management
+
+    UploadFileDisplay Uploder;
+
+    List<string> SelectedImages = new List<string>();
 
     List<Recipe> recipes = new List<Recipe>();
 
     protected override void OnInitialized()
     {
-        //Load tags
-        Tags = TagService.GetTags();
-
         //Load recipes
-        LoadRecipes();
-
+        Init();
         dialogService.OnClose += Close;
     }
 
-    void LoadRecipes()
+    void Init()
     {
+        //Load tags
+        Tags = TagService.GetTags();
+        tempRemoveRt.Clear();
+        tempAddRt.Clear();
+        //Load ingrefients
+        Ingredients = IngredientService.GetIngredients();
+        tempRemoveIrq.Clear();
+        tempAddIrq.Clear();
+        //Load recipes
         recipes = RecipeService.GetRecipes();
+        //Clear images
+        SelectedImages.Clear();
+        //State change
         StateHasChanged();
     }
 
 
     void AddNewRecipe()
     {
-        InitTempsTags();
-        selectedRecipe = new Recipe() { Id = Guid.NewGuid() };
+        selectedRecipe = new Recipe();
+        Modal.Open();
+    }
+    void Modify(Recipe recipe)
+    {
+        selectedRecipe = recipe;
+        SelectedImages = recipe.Pictures;
         Modal.Open();
     }
 
@@ -258,22 +319,19 @@ else
 
     void Cancel()
     {
-        LoadRecipes();
+        RecipeService.ResetContextState();
+        Uploder.Reset();
+        Init();
         Modal.Close();
     }
 
     void Save()
     {
-        if (SelectedImages.Count != 0)
-        {
-            if (!String.IsNullOrWhiteSpace(selectedRecipe.PicturesNames))
-                UploadService.Remove(selectedRecipe.PicturesNames);
-            selectedRecipe.PicturesNames = SelectedImages.First().InternalFileName;
-        }
-        Toaster.NotifyResult(RecipeService.Save(selectedRecipe), selectedRecipe.ToString());
-        LoadRecipes();
+        selectedRecipe.Pictures = Uploder.SaveAndReset();
+        var result = RecipeService.Save(selectedRecipe, tempRemoveRt, tempAddRt, tempRemoveIrq, tempAddIrq);
+        Toaster.NotifyResult(result, selectedRecipe.ToString());
+        Init();
         Modal.Close();
-        SelectedImages.Clear();
     }
 
     void ConfirmDelete(Recipe recipe)
@@ -287,7 +345,7 @@ else
         if (recipe != null)
         {
             Toaster.NotifyResult(RecipeService.Delete(recipe), recipe.ToString());
-            LoadRecipes();
+            Init();
         }
     }
 }

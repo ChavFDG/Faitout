@@ -5,7 +5,20 @@
 
 <FtModal @ref="Modal">
     <MatAutocompleteList Items="@Ingres" TItem="Ingredient" ValueChanged="SelectionChanged" Label="Pick one"></MatAutocompleteList>
+
+    <MatExpansionPanel>
+        <MatExpansionPanelSummary>
+            <MatExpansionPanelHeader>Personal data</MatExpansionPanelHeader>
+            <MatExpansionPanelSubHeader>Type your name and age</MatExpansionPanelSubHeader>
+        </MatExpansionPanelSummary>
+        <MatExpansionPanelDetails>
+            <MatStringField Label="First name"></MatStringField>
+            <MatStringField Label="Age"></MatStringField>
+        </MatExpansionPanelDetails>
+    </MatExpansionPanel>
+
 </FtModal>
+
 
 @code
         {
@@ -23,10 +36,10 @@
 
 @code {
 
-        private FtModal Modal { get; set; }
+    private FtModal Modal { get; set; }
+    private FtModal Modal2 { get; set; }
 
 
-    bool ModalOpen = false;
 
     bool Opened = true;
 

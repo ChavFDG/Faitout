@@ -1,5 +1,6 @@
 ﻿using Faitout.Data;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,6 +14,13 @@ namespace Faitout.Services
         public BaseService(ApplicationDbContext context)
         {
             _context = context;
+        }
+
+        public void ResetContextState()
+        {
+            _context.ChangeTracker.Entries()
+                                  .Where(e => e.Entity != null).ToList()
+                                  .ForEach(e => e.State = EntityState.Detached);
         }
     }
 }
