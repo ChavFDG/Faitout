@@ -13,13 +13,6 @@
 <MatButton @onclick="(() => IsSliderOpen = true)">Ouvrir slider</MatButton>
 
 
-<FtSlider IsOpen="IsSliderOpen">
-    <FtSliderContent>
-        <p>Test</p>
-    </FtSliderContent>
-</FtSlider>
-
-
 <FtModal @ref="Modal">
     <MatAutocompleteList Items="@Ingres" TItem="Ingredient" ValueChanged="SelectionChanged" Label="Pick one"></MatAutocompleteList>
 

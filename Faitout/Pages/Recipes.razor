@@ -4,164 +4,167 @@
 @inject Faitout.Services.UploadService UploadService
 @inject Faitout.Services.TagService TagService
 @inject Faitout.Services.IngredientService IngredientService
+@*Table*@
+<FtDiv Title="Recettes" IsOpen="!OpenEdit">
 
-<h1>Recettes</h1>
+    <p>Si dessous la liste de toute les recettes que vous gérez.</p>
 
-<p>Si dessous la liste de toute les recettes que vous gérez.</p>
-
-@if (recipes == null)
-{
-    <p><em>Chargement...</em></p>
-}
-else
-{
-    <RadzenButton Click="@(AddNewRecipe)" Text="Ajouter"></RadzenButton>
-    <table class="table">
-        <thead>
-            <tr>
-                <th></th>
-                <th>Nom</th>
-                <th>Tags</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var recipe in recipes.OrderBy(x => x.Name))
-            {
+    @if (recipes == null)
+    {
+        <p><em>Chargement...</em></p>
+    }
+    else
+    {
+        <RadzenButton Click="@(AddNewRecipe)" Text="Ajouter"></RadzenButton>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <RadzenImage Path="@PathTools.GetFilePath(recipe.Pictures.FirstOrDefault())" Style="width:75px" />
-                    </td>
-                    <td>@recipe.Name</td>
-                    <td>
-                        @foreach (var rt in recipe.RecipesTags)
-                        {
-                            <FtTag Name="@rt.Tag.Name" Description="@rt.Tag.Description" Color="@rt.Tag.Color" />
-                        }
-                    </td>
-                    <td>
-                        <MatButton OnClick="@(e => { Modify(recipe); })">Modifier</MatButton> |
-                        <MatButton OnClick="@(e => { ConfirmDelete(recipe); })">Supprimer</MatButton>
-                    </td>
+                    <th></th>
+                    <th>Nom</th>
+                    <th>Tags</th>
+                    <th>Action</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var recipe in recipes.OrderBy(x => x.Name))
+                {
+                    <tr>
+                        <td>
+                            <RadzenImage Path="@PathTools.GetFilePath(recipe.Pictures.FirstOrDefault())" Style="width:75px" />
+                        </td>
+                        <td>@recipe.Name</td>
+                        <td>
+                            @foreach (var rt in recipe.RecipesTags)
+                            {
+                                <FtTag Name="@rt.Tag.Name" Description="@rt.Tag.Description" Color="@rt.Tag.Color" />
+                            }
+                        </td>
+                        <td>
+                            <MatButton OnClick="@(e => { Modify(recipe); })">Modifier</MatButton> |
+                            <MatButton OnClick="@(e => { ConfirmDelete(recipe); })">Supprimer</MatButton>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 
+</FtDiv>
 
-
-
-
-    <FtModal @ref="Modal" Title="Recette">
-        <EditForm Model="@selectedRecipe" OnValidSubmit="@Save">
-            <FtModalContent>
-                <DataAnnotationsValidator />
-                <RadzenFieldset Text="Informations">
-                    <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name" FullWidth="true"></MatTextField>
-                    <ValidationMessage For="@(()=> selectedRecipe.Name)" />
-                    &nbsp;
-                    <UploadFileDisplay @ref="Uploder" Label="Photos de la recette" ImageOnly="true" MultipleFile="true" @bind-FilesNames="@SelectedImages" />
-                    &nbsp;
-                    <p>Tag</p>
-                    <p>Cliquer sur un tag pour l'ajouter</p>
-                    <div class="row">
-                        <div class="col">
-                            <RadzenFieldset Text="Tag disponible">
-                                @foreach (var tag in notSelectedTags)
-                                {
-                                    <FtTag Tag="tag" OnClick="@(() => { AddTag(tag); })" />
-                                }
-
-                            </RadzenFieldset>
-                        </div>
-                        <div class="col">
-                            <RadzenFieldset Text="Tag de la recette">
-                                @foreach (var rt in selectedRecipe.RecipesTags)
-                                {
-                                    <FtTag Tag="rt.Tag" OnClick="@(()=>{ RemoveTag(rt); })" />
-                                }
-                            </RadzenFieldset>
-                        </div>
-                    </div>
-                </RadzenFieldset>
-                <RadzenFieldset Text="Ingrédients">
-                    <p>Ajouter et choisissez les ingrédients</p>
-                    <div class="row">
-                        <div class="col">
-                            <MatAutocompleteForm @ref="AutoCompleteForm"
-                                                 Items="@autoCompleteIngredientList"
-                                                 TItem="Ingredient"
-                                                 ValueChanged="SelectedIngredientChanged"
-                                                 @onkeypress="IngredientKeyPressed"
-                                                 Label="Saisir un ingrédient"
-                                                 FullWidth="true">
-                                <ItemTemplate Context="ingredient">
-                                    <div style="display: flex; flex-direction: row; width: 100%;">
-                                        @ingredient.ToLongString()
-                                    </div>
-                                </ItemTemplate>
-                            </MatAutocompleteForm>
-                        </div>
-                        <div class="col-md-auto">
-                            <MatFAB OnClick="@AddNewIngredientFromUserTyping" Type="button" Icon="@MatIconNames.Add" />
-                        </div>
-                    </div>
-                    <div class="row">
-                        @if (selectedRecipe.IngredientRecipeQuantity.Any())
+@*AddModify*@
+<FtDiv Title="Recette" IsOpen="OpenEdit">
+    <EditForm Model="@selectedRecipe" OnValidSubmit="@Save">
+        <DataAnnotationsValidator />
+        <RadzenFieldset Text="Informations">
+            <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name" FullWidth="true"></MatTextField>
+            <ValidationMessage For="@(()=> selectedRecipe.Name)" />
+            &nbsp;
+            <UploadFileDisplay @ref="Uploder" Label="Photos de la recette" ImageOnly="true" MultipleFile="true" @bind-FilesNames="@SelectedImages" />
+            &nbsp;
+            <p>Tag</p>
+            <p>Cliquer sur un tag pour l'ajouter</p>
+            <div class="row">
+                <div class="col">
+                    <RadzenFieldset Text="Tag disponible">
+                        @foreach (var tag in notSelectedTags)
                         {
-                            <table class="table">
-                                <thead>
-                                    <tr>
-                                        <th>Nom</th>
-                                        <th>Quantity</th>
-                                        <th>Est bio</th>
-                                        <th>Allergène</th>
-                                        <th>Informations complémentaire</th>
-                                        <th>Sous ingrédients</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var irq in selectedRecipe.IngredientRecipeQuantity.OrderBy(x => x.Quantity))
-                                    {
-                                        <tr>
-                                            <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
-                                            <td>
-                                                <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
-                                                <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities" />
-                                            </td>
-                                            <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
-                                            <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
-                                            <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
-                                            @*<td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>*@
-                                            <td>
-                                            </td>
-                                            <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
-
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                            <FtTag Tag="tag" OnClick="@(() => { AddTag(tag); })" />
                         }
-                    </div>
-                    <div class="row">
-                        <MatTextField @bind-Value="@selectedRecipe.Steps" Dense="true" Label="Étapes" TextArea="true" HelperText="Saisir les étapes de la recette" FullWidth="true" />
-                    </div>
-                </RadzenFieldset>
-            </FtModalContent>
-            <FtModalFooter>
-                <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-                <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
-                <MatButton Type="submit">Sauvegarder</MatButton>
-            </FtModalFooter>
-        </EditForm>
-    </FtModal>
-}
+
+                    </RadzenFieldset>
+                </div>
+                <div class="col">
+                    <RadzenFieldset Text="Tag de la recette">
+                        @foreach (var rt in selectedRecipe.RecipesTags)
+                        {
+                            <FtTag Tag="rt.Tag" OnClick="@(()=>{ RemoveTag(rt); })" />
+                        }
+                    </RadzenFieldset>
+                </div>
+            </div>
+        </RadzenFieldset>
+        <RadzenFieldset Text="Ingrédients">
+            <p>Ajouter et choisissez les ingrédients</p>
+            <div class="row">
+                <div class="col">
+                    <MatAutocompleteForm @ref="AutoCompleteForm"
+                                         Items="@autoCompleteIngredientList"
+                                         TItem="Ingredient"
+                                         ValueChanged="SelectedIngredientChanged"
+                                         @onkeypress="IngredientKeyPressed"
+                                         Label="Saisir un ingrédient"
+                                         FullWidth="true">
+                        <ItemTemplate Context="ingredient">
+                            <div style="display: flex; flex-direction: row; width: 100%;">
+                                @ingredient.ToLongString()
+                            </div>
+                        </ItemTemplate>
+                    </MatAutocompleteForm>
+                </div>
+                <div class="col-md-auto">
+                    <MatFAB OnClick="@AddNewIngredientFromUserTyping" Type="button" Icon="@MatIconNames.Add" />
+                </div>
+            </div>
+            <div class="row">
+                @if (selectedRecipe.IngredientRecipeQuantity.Any())
+                {
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Nom</th>
+                                <th>Quantity</th>
+                                <th>Est bio</th>
+                                <th>Allergène</th>
+                                <th>Informations complémentaire</th>
+                                <th>Sous ingrédients</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var irq in selectedRecipe.IngredientRecipeQuantity.OrderBy(x => x.Quantity))
+                            {
+                                <tr>
+                                    <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
+                                    <td>
+                                        <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
+                                        <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities" />
+                                    </td>
+                                    <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
+                                    <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
+                                    <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
+                                    @*<td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>*@
+                                    <td>
+                                    </td>
+                                    <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
+
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+            </div>
+            <div class="row">
+                <MatTextField @bind-Value="@selectedRecipe.Steps" Dense="true" Label="Étapes" TextArea="true" HelperText="Saisir les étapes de la recette" FullWidth="true" />
+            </div>
+        </RadzenFieldset>
+        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+        <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
+        <MatButton Type="submit">Sauvegarder</MatButton>
+    </EditForm>
+</FtDiv>
+
+
+
+
+
+
+
+
 
 
 @code {
 
-    FtModal Modal;
+    bool OpenEdit = false;
 
     Unity[] unities = Enum.GetValues(typeof(Unity)).Cast<Unity>().ToArray();
 
@@ -305,13 +308,13 @@ else
     void AddNewRecipe()
     {
         selectedRecipe = new Recipe();
-        Modal.Open();
+        OpenEdit = true;
     }
     void Modify(Recipe recipe)
     {
         selectedRecipe = recipe;
         SelectedImages = recipe.Pictures;
-        Modal.Open();
+        OpenEdit = true;
     }
 
     Recipe selectedRecipe = new Recipe();
@@ -322,7 +325,7 @@ else
         RecipeService.ResetContextState();
         Uploder.Reset();
         Init();
-        Modal.Close();
+        OpenEdit = false;
     }
 
     void Save()
@@ -331,7 +334,7 @@ else
         var result = RecipeService.Save(selectedRecipe, tempRemoveRt, tempAddRt, tempRemoveIrq, tempAddIrq);
         Toaster.NotifyResult(result, selectedRecipe.ToString());
         Init();
-        Modal.Close();
+        OpenEdit = false;
     }
 
     void ConfirmDelete(Recipe recipe)

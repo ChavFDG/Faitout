@@ -41,7 +41,7 @@ namespace Faitout.Services
             foreach (var rt in rtToAdd)
             {
                 if (!_context.RecipesTags.Any(x => x.Id == rt.Id))
-                    _context.Entry(rt).State = EntityState.Added;
+                    _context.ChangeTracker.Entries<RecipeTag>().First(x => x.Entity.Id == rt.Id).State = EntityState.Added;
             }
             foreach (var irq in irqToRemove)
             {
@@ -52,10 +52,10 @@ namespace Faitout.Services
             {
                 //If ingredient don't exist add it
                 if (!_context.Ingredients.Any(x => x.Id == irq.IngredientId))
-                    _context.Entry(irq.IngredientId).State = EntityState.Added;
+                    _context.ChangeTracker.Entries<Ingredient>().First(x=>x.Entity.Id == irq.IngredientId).State = EntityState.Added;
 
                 if (!_context.IngredientsRecipesQuantities.Any(x => x.Id == irq.Id))
-                    _context.Entry(irq).State = EntityState.Added;
+                    _context.ChangeTracker.Entries<IngredientRecipeQuantity>().First(x => x.Entity.Id == irq.Id).State = EntityState.Added;
             }
 
             foreach (var ingredient in _context.ChangeTracker.Entries<Ingredient>().Where(x=>x.State == EntityState.Modified && recipe.IngredientRecipeQuantity.Any(irq=>irq.IngredientId == x.Entity.Id)))
