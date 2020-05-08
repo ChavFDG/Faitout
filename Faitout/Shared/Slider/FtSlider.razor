@@ -1,0 +1,47 @@
+﻿<style>
+
+.sidenav {
+  height: 100%;
+  width: 0;
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  text-align:center;
+}
+
+
+@*@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+    .sidenav a {
+        font-size: 18px;
+    }
+}*@
+</style>
+
+    <div class="sidenav" style="@(IsOpen?"width:100%":"width:0%")">
+        <div class="row">
+            <MatFAB OnClick="@Close" Type="button" Icon="@MatIconNames.Add" />
+        </div>
+        <div class="row">
+            @ChildContent
+        </div>
+    </div>
+
+
+
+@code {
+    [Parameter]
+    public bool IsOpen { get; set; }
+    [Parameter]
+    public RenderFragment ChildContent { get; set; }
+
+    void Close()
+    {
+
+    }
+}

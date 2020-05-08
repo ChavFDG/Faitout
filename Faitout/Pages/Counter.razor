@@ -1,7 +1,24 @@
 ﻿@page "/counter"
 
+@*Table*@
+<div>
 
+</div>
+
+@*AddModify*@
+<div>
+
+</div>
 <MatButton @onclick="(() => Modal.Open())">Ouvrir modal</MatButton>
+<MatButton @onclick="(() => IsSliderOpen = true)">Ouvrir slider</MatButton>
+
+
+<FtSlider IsOpen="IsSliderOpen">
+    <FtSliderContent>
+        <p>Test</p>
+    </FtSliderContent>
+</FtSlider>
+
 
 <FtModal @ref="Modal">
     <MatAutocompleteList Items="@Ingres" TItem="Ingredient" ValueChanged="SelectionChanged" Label="Pick one"></MatAutocompleteList>
@@ -40,7 +57,7 @@
     private FtModal Modal2 { get; set; }
 
 
-
+    bool IsSliderOpen = false;
     bool Opened = true;
 
     void ButtonClicked()
