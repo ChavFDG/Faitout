@@ -19,12 +19,12 @@ namespace Faitout.Services
         }
         public List<Recipe> GetRecipes()
         {
-            return _context.Recipes.Include(x => x.IngredientRecipeQuantity).ThenInclude(x => x.Ingredient)
+            return _context.Recipes.Include(x => x.IngredientRecipeQuantity).ThenInclude(x => x.Ingredient).ThenInclude(x=>x.ChildsIngredients)
                                    .Include(x => x.RecipesTags).ThenInclude(x => x.Tag)
                                    .ToList();
         }
 
-        public Result Save(Recipe recipe, List<RecipeTag> rtToRemove, List<RecipeTag> rtToAdd, List<IngredientRecipeQuantity> irqToRemove, List<IngredientRecipeQuantity> irqToAdd)
+        public Result Save(Recipe recipe,  List<IngredientRecipeQuantity> irqToRemove, List<IngredientRecipeQuantity> irqToAdd)
         {
             if (recipe is null)
                 return new Result("Deposit est null");
@@ -32,18 +32,6 @@ namespace Faitout.Services
 
             if (!_context.Recipes.Any(x => x.Id == recipe.Id))
                 _context.Recipes.Add(recipe);
-
-            //Recipe Tag
-            foreach (var rt in rtToRemove)
-            {
-                if (_context.RecipesTags.Any(x => x.Id == rt.Id))
-                    _context.RecipesTags.Remove(rt);
-            }
-            foreach (var rt in rtToAdd)
-            {
-                if (!_context.RecipesTags.Any(x => x.Id == rt.Id))
-                    _context.ChangeTracker.Entries<RecipeTag>().First(x => x.Entity.Id == rt.Id).State = EntityState.Added;
-            }
 
             //Ingredient recipe quantity
             foreach (var irq in irqToRemove)
@@ -59,11 +47,6 @@ namespace Faitout.Services
 
                 if (!_context.IngredientsRecipesQuantities.Any(x => x.Id == irq.Id))
                     _context.ChangeTracker.Entries<IngredientRecipeQuantity>().First(x => x.Entity.Id == irq.Id).State = EntityState.Added;
-            }
-
-            foreach (var ingredient in _context.ChangeTracker.Entries<IngredientSubIngredientOrder>().Where(x => x.State != EntityState.Unchanged))
-            {
-                var entity = ingredient.Entity;
             }
 
             foreach (var ingredient in _context.ChangeTracker.Entries<Ingredient>().Where(x => x.State != EntityState.Unchanged))

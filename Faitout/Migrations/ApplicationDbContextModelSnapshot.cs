@@ -146,6 +146,7 @@ namespace Faitout.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("Name")
+                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("PictureName")
@@ -181,33 +182,6 @@ namespace Faitout.Migrations
                     b.HasIndex("RecipeId");
 
                     b.ToTable("IngredientsRecipesQuantities");
-                });
-
-            modelBuilder.Entity("Faitout.Data.Model.IngredientSubIngredientOrder", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<Guid?>("ChildId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<int>("Order")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("ParentId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<double>("Percentage")
-                        .HasColumnType("float");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ChildId");
-
-                    b.HasIndex("ParentId");
-
-                    b.ToTable("IngredientsSubIngredientsOrders");
                 });
 
             modelBuilder.Entity("Faitout.Data.Model.IngredientTraceability", b =>
@@ -521,6 +495,41 @@ namespace Faitout.Migrations
                     b.HasIndex("ProviderId");
 
                     b.ToTable("StocksMoves");
+                });
+
+            modelBuilder.Entity("Faitout.Data.Model.SubIngredient", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ComplementaryInformations")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsAllergen")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsOrganic")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Order")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("ParentId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("Percentage")
+                        .HasColumnType("decimal(18,3)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ParentId");
+
+                    b.ToTable("SubIngredients");
                 });
 
             modelBuilder.Entity("Faitout.Data.Model.Tag", b =>
@@ -902,19 +911,6 @@ namespace Faitout.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Faitout.Data.Model.IngredientSubIngredientOrder", b =>
-                {
-                    b.HasOne("Faitout.Data.Model.Ingredient", "Child")
-                        .WithMany("ParentsIngredients")
-                        .HasForeignKey("ChildId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.HasOne("Faitout.Data.Model.Ingredient", "Parent")
-                        .WithMany("ChildsIngredients")
-                        .HasForeignKey("ParentId")
-                        .OnDelete(DeleteBehavior.Restrict);
-                });
-
             modelBuilder.Entity("Faitout.Data.Model.IngredientTraceability", b =>
                 {
                     b.HasOne("Faitout.Data.Model.ProductStock", "ProductStock")
@@ -998,6 +994,15 @@ namespace Faitout.Migrations
                     b.HasOne("Faitout.Data.Model.Provider", "Provider")
                         .WithMany()
                         .HasForeignKey("ProviderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Faitout.Data.Model.SubIngredient", b =>
+                {
+                    b.HasOne("Faitout.Data.Model.Ingredient", "Parent")
+                        .WithMany("ChildsIngredients")
+                        .HasForeignKey("ParentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

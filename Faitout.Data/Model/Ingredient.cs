@@ -8,6 +8,7 @@ using System.Transactions;
 
 namespace Faitout.Data.Model
 {
+
     public class Ingredient
     {
         [Key]
@@ -29,11 +30,29 @@ namespace Faitout.Data.Model
         [Display(Name = "Nom de image")]
         public string PictureName { get; set; }
 
-        [Display(Name = "Ingrédients enfants")]
-        public virtual List<IngredientSubIngredientOrder> ChildsIngredients { get; set; } = new List<IngredientSubIngredientOrder>();
+        [Display(Name = "Nom des images")]
+        [NotMapped]
+        public List<string> Pictures
+        {
+            get
+            {
+                List<string> toReturn = new List<string>();
+                if(!string.IsNullOrWhiteSpace(PictureName))
+                    toReturn.Add(PictureName);
+                return toReturn;
+            }
+            set
+            {
+                if (value.Count != 0)
+                {
+                    PictureName = value.First();
+                }
+            }
+        }
 
-        [Display(Name = "Ingrédients parents")]
-        public virtual List<IngredientSubIngredientOrder> ParentsIngredients { get; set; } = new List<IngredientSubIngredientOrder>();
+        [Display(Name = "Ingrédients enfants")]
+        public virtual List<SubIngredient> ChildsIngredients { get; set; } = new List<SubIngredient>();
+
 
         [Display(Name = "Recetes")]
         public List<IngredientRecipeQuantity> IngredientRecipeQuantity { get; set; } = new List<IngredientRecipeQuantity>();
@@ -45,15 +64,17 @@ namespace Faitout.Data.Model
 
         public Ingredient Clone()
         {
-            var clone = new Ingredient();
-            clone.Name = Name;
-            clone.ComplementaryInformations = ComplementaryInformations;
-            clone.IsOrganic = IsOrganic;
-            clone.IsAllergen = IsAllergen;
-            foreach (var isio in ChildsIngredients)
+            var clone = new Ingredient
             {
-               new IngredientSubIngredientOrder(clone, isio.Child) { Order = isio.Order, Percentage = isio.Percentage };                
-            }
+                Name = Name,
+                ComplementaryInformations = ComplementaryInformations,
+                IsOrganic = IsOrganic,
+                IsAllergen = IsAllergen
+            };
+            //foreach (var isio in ChildsIngredients)
+            //{
+            //   new IngredientSubIngredientOrder(clone, isio.Child) { Order = isio.Order, Percentage = isio.Percentage };                
+            //}
             return clone;
         }
 
@@ -69,11 +90,11 @@ namespace Faitout.Data.Model
                 return false;
             foreach (var isio in ChildsIngredients)
             {
-                var child = ingredient.ChildsIngredients.FirstOrDefault(x => x.Child == isio.Child);
-                if (child == null)
-                    return false;
-                else if (!isio.Child.CompareValues(child.Child))
-                    return false;
+                //var child = ingredient.ChildsIngredients.FirstOrDefault(x => x.Child == isio.Child);
+                //if (child == null)
+                //    return false;
+                //else if (!isio.Child.CompareValues(child.Child))
+                //    return false;
             }
             return true;
         }

@@ -1,188 +1,127 @@
 ﻿
+    <FtModal @ref="Modal" Size="80" Title=@("Sous ingrédients de "+Ingredient?.Name)>
+        @if (Ingredient != null)
+        {
+            <MatDialogTitle>Sous ingrédient de @Ingredient.Name</MatDialogTitle>
+            <MatDialogContent>
+                <p>Ajouter une photo de la liste des ingrédients</p>
+                <UploadFileDisplay @ref="Uploader" ImageOnly="true" MultipleFile="false" FilesNames="@Ingredient.Pictures" />
+                <p>Ajouter et choisissez les sous-ingrédients</p>
+                <div class="row">
+                    <div class="col">
+                        <MatTextField @bind-Value="@subIngredientName" OnKeyPress="NameKeyPressed" Label="Nom de l'ingrédient"></MatTextField>
+                    </div>
+                    <div class="col-md-auto">
+                        <MatFAB OnClick="@AddSubIngredient" Type="button" Icon="@MatIconNames.Add" />
+                    </div>
+                </div>
+                <div class="row" style="min-height:200px">
+                    @if (Ingredient.ChildsIngredients.Any())
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th>Nom</th>
+                                    <th>Pourcentage</th>
+                                    <th>Est bio</th>
+                                    <th>Allergène</th>
+                                    <th>Informations complémentaire</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var subIngredient in Ingredient.ChildsIngredients.OrderBy(x => x.Order))
+                                {
+                                    <tr>
+                                        <td>
+                                            <MatIconButton Disabled="@(subIngredient.Order==1)" Icon="expand_less" OnClick="@(()=>Up(subIngredient))"></MatIconButton>
+                                            @subIngredient.Order
+                                            <MatIconButton Disabled="@(subIngredient.Order==Ingredient.ChildsIngredients.Count())" Icon="expand_more" OnClick="@(()=>Down(subIngredient))"></MatIconButton>
+                                        </td>
+                                        <td><MatTextField Label="Nom" @bind-Value="@subIngredient.Name" /></td>
+                                        <td>
+                                            <MatNumericUpDownField Label="Pourcentage" @bind-Value="@subIngredient.Percentage" DecimalPlaces=2 Minimum="0" Maximum="100" FieldType="MatNumericUpDownFieldType.Percent" />
+                                        </td>
+                                        <td><FtToggle @bind-Value="subIngredient.IsOrganic" LabelWhenFalse="non" LabelWhenTrue="Bio" /></td>
+                                        <td><FtToggle @bind-Value="subIngredient.IsAllergen" LabelWhenFalse="non" LabelWhenTrue="Allergène" /></td>
+                                        <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@subIngredient.ComplementaryInformations" /></td>
+                                        <td><MatButton Type="button" OnClick="@(e => { RemoveSubIngredient(subIngredient); })">Retirer</MatButton></td>
 
-<FtModal @ref="Modal" Size="80" Title=@("Sous ingrédients de "+clonedIngredient.Name)>
-    <MatDialogTitle>Sous ingrédient de @clonedIngredient.Name</MatDialogTitle>
-    <MatDialogContent>
-        <p>Ajouter et choisissez les sous-ingrédients</p>
-        <div class="row">
-            <FtIngredientsSelector @ref="FtIngredientsSelector" ParentIngredient="ingredient" IngredientAdded="AddIngredient" Ingredients="Ingredients" SelectedIngredients="selectedIngredients" />
-        </div>
-        <div class="row">
-            @if (clonedIngredient.ChildsIngredients.Any())
-            {
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Nom</th>
-                            <th>Est bio</th>
-                            <th>Allergène</th>
-                            <th>Informations complémentaire</th>
-                            <th>Sous ingrédients</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var isio in clonedIngredient.ChildsIngredients.OrderBy(x => x.Order))
-                        {
-                            <tr>
-                                <td>
-                                    <MatIconButton Disabled="@(isio.Order==1)" Icon="expand_less" OnClick="@(()=>Up(isio))"></MatIconButton>
-                                    @isio.Order
-                                    <MatIconButton Disabled="@(isio.Order==clonedIngredient.ChildsIngredients.Count())" Icon="expand_more" OnClick="@(()=>Down(isio))"></MatIconButton>
-                                </td>
-                                <td><MatTextField Label="Nom" @bind-Value="@isio.Child.Name" /></td>
-                                <td><FtToggle @bind-Value="isio.Child.IsOrganic" LabelWhenFalse="non" LabelWhenTrue="Bio" /></td>
-                                <td><FtToggle @bind-Value="isio.Child.IsAllergen" LabelWhenFalse="non" LabelWhenTrue="Allergène" /></td>
-                                <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@isio.Child.ComplementaryInformations" /></td>
-                                <td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(isio.Child); })">@(isio.Child.ChildsIngredients.Count()) sous ingrédients</MatButton></td>
-                                <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(isio); })">Retirer</MatButton></td>
-
-                            </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-        </div>
-    </MatDialogContent>
-    <MatDialogActions>
-        <MatButton OnClick="@Save">Valider</MatButton>
-    </MatDialogActions>
-</FtModal>
-
-@if (selectedSubIngredient != null)
-{
-    <FtSubIngredientModal @ref="SubIngredientModal" Ingredients="@Ingredients"/>
-}
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+            </MatDialogContent>
+            <MatDialogActions>
+                <MatButton OnClick="@Validate">Valider</MatButton>
+            </MatDialogActions>
+        }
+    </FtModal>
 
 @code{
 
+    UploadFileDisplay Uploader;
     FtModal Modal;
-
-    FtIngredientsSelector FtIngredientsSelector;
-
-    List<Ingredient> selectedIngredients = new List<Ingredient>();
-
-    Ingredient clonedIngredient { get; set; } = new Ingredient();
+    string subIngredientName;
 
     [Parameter]
-    public List<Ingredient> Ingredients { get; set; }
+    public List<SubIngredient> SubIngredients { get; set; }
 
-    Ingredient ingredient { get; set; }
+    [Parameter]
+    public Ingredient Ingredient { get; set; }
 
-    void AddIngredient(Ingredient ingredient)
+    void NameKeyPressed(KeyboardEventArgs args)
     {
-        IngredientSubIngredientOrder isio = new IngredientSubIngredientOrder(clonedIngredient, ingredient);
+        if (args.Key == "Enter")
+        {
+            AddSubIngredient();
+        }
     }
 
-    void RemoveIngredient(IngredientSubIngredientOrder isio)
+    void AddSubIngredient()
     {
-        clonedIngredient.ChildsIngredients.Remove(isio);
-        isio.Parent = null;
-        isio.Child = null;
+        Ingredient.ChildsIngredients.Add(new SubIngredient
+        {
+            Order = Ingredient.ChildsIngredients.Count + 1,
+            Name = subIngredientName
+        });
+        subIngredientName = "";
     }
 
-    void Up(IngredientSubIngredientOrder isio)
+    void RemoveSubIngredient(SubIngredient subIngredient)
     {
-        clonedIngredient.ChildsIngredients.First(x => x.Order == isio.Order - 1).Order = isio.Order;
-        isio.Order = isio.Order - 1;
+        Ingredient.ChildsIngredients.Remove(subIngredient);
     }
 
-    void Down(IngredientSubIngredientOrder isio)
+    void Up(SubIngredient subIngredient)
     {
-        clonedIngredient.ChildsIngredients.First(x => x.Order == isio.Order + 1).Order = isio.Order;
-        isio.Order = isio.Order + 1;
+        Ingredient.ChildsIngredients.First(x => x.Order == subIngredient.Order - 1).Order = subIngredient.Order;
+        subIngredient.Order = subIngredient.Order - 1;
     }
 
-    void Save()
+    void Down(SubIngredient subIngredient)
     {
-        List<IngredientSubIngredientOrder> toReplace = new List<IngredientSubIngredientOrder>();
-        List<IngredientSubIngredientOrder> toRemove = new List<IngredientSubIngredientOrder>();
+        Ingredient.ChildsIngredients.First(x => x.Order == subIngredient.Order + 1).Order = subIngredient.Order;
+        subIngredient.Order = subIngredient.Order + 1;
+    }
 
-        foreach (var isio in ingredient.ChildsIngredients)
-        {
-            var cloneIsio = clonedIngredient.ChildsIngredients.FirstOrDefault(x => x.Child == isio.Child);
-            //Cloned in ingredient exist, if check values, if not remove
-            if(cloneIsio != null)
-            {
-                isio.Order = cloneIsio.Order;
-                isio.Percentage = cloneIsio.Percentage;
-                //Compare values
-                if(cloneIsio.Child.CompareValues(isio.Child))
-                {
-                    //Identic, remove clone
-                    SetNulls(cloneIsio);
-                }
-                else
-                {
-                    //Not identic, replace by clone
-                    toReplace.Add(cloneIsio);
-                }
-                clonedIngredient.ChildsIngredients.Remove(cloneIsio);
-            }
-            else
-            {
-                toRemove.Add(isio);
-            }
-        }
-        //Add
-        foreach (var isio in clonedIngredient.ChildsIngredients)
-        {
-            isio.Parent = ingredient;
-            isio.ParentId = ingredient.Id;
-            ingredient.ChildsIngredients.Add(isio);
-        }
-        //Replace
-        foreach(var clonedIsio in toReplace)
-        {
-            var isio = ingredient.ChildsIngredients.FirstOrDefault(x => x.Child == clonedIsio.Child);
-            ingredient.ChildsIngredients.Remove(isio);
-            SetNulls(isio);
-            ingredient.ChildsIngredients.Add(isio);
-        }
-        //Remove
-        foreach (var isio in toRemove)
-        {
-            ingredient.ChildsIngredients.Remove(isio);
-            SetNulls(isio);
-        }
-
-        clonedIngredient.ChildsIngredients.Clear();
-
+    void Validate()
+    {
+        Uploader.SaveAndReset();
         Modal.Close();
     }
 
-    void SetNulls(IngredientSubIngredientOrder isio)
+    public void SetIngredient(Ingredient ingredient)
     {
-        isio.Child.ParentsIngredients.Remove(isio);
-        isio.Child = null;
-        isio.ChildId = null;
-        isio.Parent = null;
-        isio.ParentId = null;
+        Ingredient = ingredient;
     }
+
 
     public void Open()
     {
         Modal.Open();
     }
-
-    #region  IngredientSubIngredientOrder management
-
-    FtSubIngredientModal SubIngredientModal;
-
-    Ingredient selectedSubIngredient;
-
-    void EditSubIngredients(Ingredient ingredient)
-    {
-        SubIngredientModal.SetIngredient(ingredient);
-        SubIngredientModal.Open();
-    }
-
-    public void SetIngredient(Ingredient ingredient)
-    {
-        this.ingredient = ingredient;
-        clonedIngredient = ingredient.Clone();
-    }
-
-    #endregion IngredientSubIngredientOrder management
 }

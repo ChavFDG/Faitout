@@ -30,21 +30,28 @@ else
                 <MatTextField Label="Nom" @bind-Value="@selectedCategory.Name"></MatTextField>
                 <ValidationMessage For="@(()=> selectedCategory.Name)" />
                 <MatTextField Label="Description" @bind-Value="@selectedCategory.Description"></MatTextField>
-                <span>Visible par le client</span>
-                <MatSlideToggle @bind-Value="@selectedCategory.ClientVisible"></MatSlideToggle>
-                <span>Visible sur la caisse</span>
-                <MatSlideToggle @bind-Value="@selectedCategory.CashRegisterVisible"></MatSlideToggle>
+                <div class="row">
+                    <span>Visible par le client</span>
+                    <MatSlideToggle @bind-Value="@selectedCategory.ClientVisible"></MatSlideToggle>
+                </div>
+                <div class="row">
+                    <span>Visible sur la caisse</span>
+                    <MatSlideToggle @bind-Value="@selectedCategory.CashRegisterVisible"></MatSlideToggle>
+                </div>
+               
                 <MatSelect HelperText="TVA sur place" Label="TVA sur place" @bind-Value="@selectedCategory.EatInVatIdString">
                     @foreach (var vat in vats)
                         {
                         <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
                         }
+                    /**/
                 </MatSelect>
                 <MatSelect HelperText="TVA à emporter" Label="TVA à emporter" @bind-Value="@selectedCategory.TakeAwayVatIdString">
                     @foreach (var vat in vats)
                         {
                         <MatOptionString Value="@vat.Id.ToString()">@vat.ToString()</MatOptionString>
                         }
+                    /**/
                 </MatSelect>
             </MatDialogContent>
             <MatDialogActions>

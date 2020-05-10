@@ -1,12 +1,14 @@
-﻿@page "/recipes"
+﻿@page "/recettes"
 
 @inject Faitout.Services.RecipeService RecipeService
 @inject Faitout.Services.UploadService UploadService
 @inject Faitout.Services.TagService TagService
 @inject Faitout.Services.IngredientService IngredientService
 @*Table*@
-<FtDiv Title="Recettes" IsOpen="!OpenEdit">
-
+<FtDiv IsOpen="!OpenEdit">
+    <FtDivHeader Title="Recettes">
+        <MatButton OnClick="AddNewRecipe">Ajouter </MatButton>
+    </FtDivHeader>
     <p>Si dessous la liste de toute les recettes que vous gérez.</p>
 
     @if (recipes == null)
@@ -15,7 +17,6 @@
     }
     else
     {
-        <RadzenButton Click="@(AddNewRecipe)" Text="Ajouter"></RadzenButton>
         <table class="table">
             <thead>
                 <tr>
@@ -52,102 +53,96 @@
 </FtDiv>
 
 @*AddModify*@
-<FtDiv Title="Recette" IsOpen="OpenEdit">
+<FtDiv IsOpen="OpenEdit">
     <EditForm Model="@selectedRecipe" OnValidSubmit="@Save">
         <DataAnnotationsValidator />
-        <RadzenFieldset Text="Informations">
-            <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name" FullWidth="true"></MatTextField>
-            <ValidationMessage For="@(()=> selectedRecipe.Name)" />
-            &nbsp;
-            <UploadFileDisplay @ref="Uploder" Label="Photos de la recette" ImageOnly="true" MultipleFile="true" @bind-FilesNames="@SelectedImages" />
-            &nbsp;
-            <p>Tag</p>
-            <p>Cliquer sur un tag pour l'ajouter</p>
-            <div class="row">
-                <div class="col">
-                    <RadzenFieldset Text="Tag disponible">
-                        @foreach (var tag in notSelectedTags)
-                        {
-                            <FtTag Tag="tag" OnClick="@(() => { AddTag(tag); })" />
-                        }
-
-                    </RadzenFieldset>
-                </div>
-                <div class="col">
-                    <RadzenFieldset Text="Tag de la recette">
-                        @foreach (var rt in selectedRecipe.RecipesTags)
-                        {
-                            <FtTag Tag="rt.Tag" OnClick="@(()=>{ RemoveTag(rt); })" />
-                        }
-                    </RadzenFieldset>
-                </div>
-            </div>
-        </RadzenFieldset>
-        <RadzenFieldset Text="Ingrédients">
-            <p>Ajouter et choisissez les ingrédients</p>
-            <div class="row">
-                <FtIngredientsSelector @ref="FtIngredientRecipe" IngredientAdded="AddIngredient" Ingredients="Ingredients" SelectedIngredients="selectedIngredients" />
-            </div>
-            <div class="row">
-                @if (selectedRecipe.IngredientRecipeQuantity.Any())
-                {
-                    <table class="table">
-                        <thead>
-                            <tr>
-                                <th>Nom</th>
-                                <th>Quantity</th>
-                                <th>Est bio</th>
-                                <th>Allergène</th>
-                                <th>Informations complémentaire</th>
-                                <th>Sous ingrédients</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var irq in selectedRecipe.IngredientRecipeQuantity)
+        <FtDivHeader Title="Recettes">
+            <button type="submit" disabled style="display: none" aria-hidden="true"></button>
+            <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
+            <MatButton Type="submit">Sauvegarder</MatButton>
+        </FtDivHeader>
+        <MatTabGroup>
+            <MatTab Label="Informations">
+                <MatTextField Label="Nom" @bind-Value="@selectedRecipe.Name" FullWidth="true"></MatTextField>
+                <ValidationMessage For="@(()=> selectedRecipe.Name)" />
+                &nbsp;
+                <UploadFileDisplay @ref="Uploder" Label="Photos de la recette" ImageOnly="true" MultipleFile="true" @bind-FilesNames="@SelectedImages" />
+                &nbsp;
+                <p>Tag</p>
+                <p>Cliquer sur un tag pour l'ajouter</p>
+                <div class="row">
+                    <div class="col">
+                        <RadzenFieldset Text="Tag disponible">
+                            @foreach (var tag in notSelectedTags)
                             {
-                                <tr>
-                                    <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
-                                    <td>
-                                        <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
-                                        <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities" />
-                                    </td>
-                                    <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
-                                    <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
-                                    <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
-                                    <td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>
-                                    <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
-
-                                </tr>
+                                <FtTag Tag="tag" OnClick="@(() => { AddTag(tag); })" />
                             }
-                        </tbody>
-                    </table>
-                }
-            </div>
-            <div class="row">
-                <MatTextField @bind-Value="@selectedRecipe.Steps" Dense="true" Label="Étapes" TextArea="true" HelperText="Saisir les étapes de la recette" FullWidth="true" />
-            </div>
-        </RadzenFieldset>
-        <button type="submit" disabled style="display: none" aria-hidden="true"></button>
-        <MatButton Type="button" OnClick="@Cancel">Annuler</MatButton>
-        <MatButton Type="submit">Sauvegarder</MatButton>
+
+                        </RadzenFieldset>
+                    </div>
+                    <div class="col">
+                        <RadzenFieldset Text="Tag de la recette">
+                            @foreach (var rt in selectedRecipe.RecipesTags)
+                            {
+                                <FtTag Tag="rt.Tag" OnClick="@(()=>{ RemoveTag(rt); })" />
+                            }
+                        </RadzenFieldset>
+                    </div>
+                </div>
+            </MatTab>
+            <MatTab Label="Ingrédients">
+                <p>Ajouter et choisissez les ingrédients</p>
+                <div class="row">
+                    <FtIngredientsSelector @ref="FtIngredientRecipe" IngredientAdded="AddIngredient" Ingredients="Ingredients" SelectedIngredients="selectedIngredients" />
+                </div>
+                <div class="row">
+                    @if (selectedRecipe.IngredientRecipeQuantity.Any())
+                    {
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>Nom</th>
+                                    <th>Quantity</th>
+                                    <th>Est bio</th>
+                                    <th>Allergène</th>
+                                    <th>Informations complémentaire</th>
+                                    <th>Sous ingrédients</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var irq in selectedRecipe.IngredientRecipeQuantity)
+                                {
+                                    <tr>
+                                        <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
+                                        <td>
+                                            <MatNumericUpDownField Label="Quantité" Step="0.01m" Minimum="0" @bind-Value="@irq.Quantity" />
+                                            <MatSelectItem @bind-Value="@irq.QuantityUnity" Items="@unities" />
+                                        </td>
+                                        <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="non" LabelWhenTrue="Bio" /></td>
+                                        <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="non" LabelWhenTrue="Allergène" /></td>
+                                        <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
+                                        <td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>
+                                        <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
+
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                </div>
+                <div class="row">
+                    <MatTextField Outlined="true" @bind-Value="@selectedRecipe.Steps" Dense="true" Label="Étapes" TextArea="true" HelperText="Saisir les étapes de la recette" FullWidth="true" />
+                </div>
+            </MatTab>
+        </MatTabGroup>
     </EditForm>
 </FtDiv>
 
-<MatDialog @bind-IsOpen="@OpenSubIngredient">
-    <MatDialogTitle>Sous ingrédient de @selectedIngredient.Name</MatDialogTitle>
-    <MatDialogContent>
-
-    </MatDialogContent>
-    <MatDialogActions>
-        <MatButton Type="button" OnClick="@(e => { OpenSubIngredient = false; })">Annuler</MatButton>
-        <MatButton Type="submit">Sauvegarder</MatButton>
-    </MatDialogActions>
-</MatDialog>
-
+<FtSubIngredientModal @ref="FtSubIngredientModal" />
 
 @code {
-
+    FtSubIngredientModal FtSubIngredientModal;
     bool OpenEdit = false;
 
     Unity[] unities = Enum.GetValues(typeof(Unity)).Cast<Unity>().ToArray();
@@ -160,7 +155,7 @@
         {
             List<Tag> toReturn = new List<Tag>();
             foreach (var tag in Tags)
-                if (!selectedRecipe.RecipesTags.Any(x => x.TagId == tag.Id))
+                if (!selectedRecipe.RecipesTags.Any(x => x.Tag == tag))
                     toReturn.Add(tag);
             return toReturn;
         }
@@ -170,13 +165,11 @@
     void RemoveTag(RecipeTag rt)
     {
         selectedRecipe.RecipesTags.Remove(rt);
-        tempRemoveRt.Add(rt);
     }
 
     void AddTag(Tag tag)
     {
-        var rt = new RecipeTag(tag, selectedRecipe);
-        tempAddRt.Add(rt);
+        new RecipeTag(tag, selectedRecipe);
     }
 
     #endregion Tag management
@@ -202,13 +195,6 @@
 
     #endregion Ingredient management
 
-    #region Add modify RecipeTag management
-
-    List<RecipeTag> tempRemoveRt = new List<RecipeTag>();
-    List<RecipeTag> tempAddRt = new List<RecipeTag>();
-
-    #endregion Add modify RecipeTag management
-
     #region IngredientRecipeQuantity management
 
     List<IngredientRecipeQuantity> tempRemoveIrq = new List<IngredientRecipeQuantity>();
@@ -218,15 +204,15 @@
 
     #region  IngredientSubIngredientOrder management
 
-    bool OpenSubIngredient = false;
 
-    Ingredient selectedIngredient = new Ingredient();
     List<Ingredient> selectedIngredients = new List<Ingredient>();
 
 
     void EditSubIngredients(Ingredient ingredient)
     {
-        OpenSubIngredient = true;
+        FtSubIngredientModal.SetIngredient(ingredient);
+
+        FtSubIngredientModal.Open();
     }
 
     #endregion IngredientSubIngredientOrder management
@@ -248,8 +234,6 @@
     {
         //Load tags
         Tags = TagService.GetTags();
-        tempRemoveRt.Clear();
-        tempAddRt.Clear();
         //Load ingrefients
         Ingredients = IngredientService.GetIngredients();
         tempRemoveIrq.Clear();
@@ -291,7 +275,7 @@
     void Save()
     {
         selectedRecipe.Pictures = Uploder.SaveAndReset();
-        var result = RecipeService.Save(selectedRecipe, tempRemoveRt, tempAddRt, tempRemoveIrq, tempAddIrq);
+        var result = RecipeService.Save(selectedRecipe, tempRemoveIrq, tempAddIrq);
         Toaster.NotifyResult(result, selectedRecipe.ToString());
         Init();
         OpenEdit = false;

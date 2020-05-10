@@ -50,6 +50,7 @@
         }
     }
 
+
     void SelectedIngredientChanged(Ingredient ingredient)
     {
         AddIngredient(ingredient);
@@ -81,6 +82,7 @@
     {
         SelectedIngredients.Remove(ingredient);
     }
+
     [Parameter]
     public EventCallback<Ingredient> IngredientAdded{ get; set; }
 }

@@ -24,7 +24,7 @@ namespace Faitout.Data
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientRecipeQuantity> IngredientsRecipesQuantities { get; set; }
         public DbSet<IngredientTraceability> IngredientsTraceabilities { get; set; }
-        public DbSet<IngredientSubIngredientOrder> IngredientsSubIngredientsOrders { get; set; }
+        public DbSet<SubIngredient> SubIngredients{ get; set; }
         public DbSet<OpenedDay> OpenedDays { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderLine> OrderLines { get; set; }
@@ -73,17 +73,11 @@ namespace Faitout.Data
             .WithMany(i => i.IngredientRecipeQuantity)
             .HasForeignKey(r => r.RecipeId);
 
-            builder.Entity<IngredientSubIngredientOrder>()
-           .HasOne(isi => isi.Parent)
-           .WithMany(i => i.ChildsIngredients)
-           .HasForeignKey(isi => isi.ParentId)
-           .OnDelete(DeleteBehavior.Restrict);
 
-            builder.Entity<IngredientSubIngredientOrder>()
-           .HasOne(isi => isi.Child)
-           .WithMany(i => i.ParentsIngredients)
-           .HasForeignKey(isi => isi.ChildId)
-           .OnDelete(DeleteBehavior.Restrict);
+            builder.Entity<SubIngredient>()
+            .HasOne(si => si.Parent)
+            .WithMany(i => i.ChildsIngredients)
+            .HasForeignKey(si => si.ParentId);
 
             builder.Entity<Category>()
                         .HasOne(x => x.Parent)

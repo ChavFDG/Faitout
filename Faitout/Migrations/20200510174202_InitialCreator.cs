@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace Faitout.Migrations
 {
-    public partial class InitialCreation : Migration
+    public partial class InitialCreator : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -79,7 +79,7 @@ namespace Faitout.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
-                    Name = table.Column<string>(nullable: true),
+                    Name = table.Column<string>(nullable: false),
                     ComplementaryInformations = table.Column<string>(nullable: true),
                     IsOrganic = table.Column<bool>(nullable: false),
                     IsAllergen = table.Column<bool>(nullable: false),
@@ -305,30 +305,27 @@ namespace Faitout.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "IngredientsSubIngredientsOrders",
+                name: "SubIngredients",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(nullable: false),
+                    Name = table.Column<string>(nullable: false),
+                    ComplementaryInformations = table.Column<string>(nullable: true),
+                    IsOrganic = table.Column<bool>(nullable: false),
+                    IsAllergen = table.Column<bool>(nullable: false),
+                    ParentId = table.Column<Guid>(nullable: false),
                     Order = table.Column<int>(nullable: false),
-                    Percentage = table.Column<double>(nullable: false),
-                    ParentId = table.Column<Guid>(nullable: true),
-                    ChildId = table.Column<Guid>(nullable: true)
+                    Percentage = table.Column<decimal>(type: "decimal(18,3)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_IngredientsSubIngredientsOrders", x => x.Id);
+                    table.PrimaryKey("PK_SubIngredients", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_IngredientsSubIngredientsOrders_Ingredients_ChildId",
-                        column: x => x.ChildId,
-                        principalTable: "Ingredients",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_IngredientsSubIngredientsOrders_Ingredients_ParentId",
+                        name: "FK_SubIngredients_Ingredients_ParentId",
                         column: x => x.ParentId,
                         principalTable: "Ingredients",
                         principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -702,16 +699,6 @@ namespace Faitout.Migrations
                 column: "RecipeId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_IngredientsSubIngredientsOrders_ChildId",
-                table: "IngredientsSubIngredientsOrders",
-                column: "ChildId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_IngredientsSubIngredientsOrders_ParentId",
-                table: "IngredientsSubIngredientsOrders",
-                column: "ParentId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_IngredientsTraceabilities_ProductStockId",
                 table: "IngredientsTraceabilities",
                 column: "ProductStockId");
@@ -787,6 +774,11 @@ namespace Faitout.Migrations
                 column: "ProviderId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_SubIngredients_ParentId",
+                table: "SubIngredients",
+                column: "ParentId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_TimeRange_OpenedDayId",
                 table: "TimeRange",
                 column: "OpenedDayId");
@@ -819,9 +811,6 @@ namespace Faitout.Migrations
                 name: "IngredientsRecipesQuantities");
 
             migrationBuilder.DropTable(
-                name: "IngredientsSubIngredientsOrders");
-
-            migrationBuilder.DropTable(
                 name: "IngredientsTraceabilities");
 
             migrationBuilder.DropTable(
@@ -840,13 +829,13 @@ namespace Faitout.Migrations
                 name: "StocksMoves");
 
             migrationBuilder.DropTable(
+                name: "SubIngredients");
+
+            migrationBuilder.DropTable(
                 name: "TimeRange");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");
-
-            migrationBuilder.DropTable(
-                name: "Ingredients");
 
             migrationBuilder.DropTable(
                 name: "Orders");
@@ -859,6 +848,9 @@ namespace Faitout.Migrations
 
             migrationBuilder.DropTable(
                 name: "Providers");
+
+            migrationBuilder.DropTable(
+                name: "Ingredients");
 
             migrationBuilder.DropTable(
                 name: "OpenedDays");
