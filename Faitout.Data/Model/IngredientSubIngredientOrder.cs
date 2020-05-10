@@ -14,12 +14,14 @@ namespace Faitout.Data.Model
         }
         public IngredientSubIngredientOrder(Ingredient parent, Ingredient child)
         {
+            Order = parent.ChildsIngredients.Count + 1;
             ParentId = parent.Id;
             Parent = parent;
             Parent.ChildsIngredients.Add(this);
             ChildId = child.Id;
             Child = child;
-            Child.ChildsIngredients.Add(this);
+            Child.ParentsIngredients.Add(this);
+            
         }
 
         [Key]

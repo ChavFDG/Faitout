@@ -1,4 +1,4 @@
-﻿@page "/recettes"
+﻿@page "/recipes"
 
 @inject Faitout.Services.RecipeService RecipeService
 @inject Faitout.Services.UploadService UploadService
@@ -86,24 +86,7 @@
         <RadzenFieldset Text="Ingrédients">
             <p>Ajouter et choisissez les ingrédients</p>
             <div class="row">
-                <div class="col">
-                    <MatAutocompleteForm @ref="AutoCompleteForm"
-                                         Items="@autoCompleteIngredientList"
-                                         TItem="Ingredient"
-                                         ValueChanged="SelectedIngredientChanged"
-                                         @onkeypress="IngredientKeyPressed"
-                                         Label="Saisir un ingrédient"
-                                         FullWidth="true">
-                        <ItemTemplate Context="ingredient">
-                            <div style="display: flex; flex-direction: row; width: 100%;">
-                                @ingredient.ToLongString()
-                            </div>
-                        </ItemTemplate>
-                    </MatAutocompleteForm>
-                </div>
-                <div class="col-md-auto">
-                    <MatFAB OnClick="@AddNewIngredientFromUserTyping" Type="button" Icon="@MatIconNames.Add" />
-                </div>
+                <FtIngredientsSelector @ref="FtIngredientRecipe" IngredientAdded="AddIngredient" Ingredients="Ingredients" SelectedIngredients="selectedIngredients" />
             </div>
             <div class="row">
                 @if (selectedRecipe.IngredientRecipeQuantity.Any())
@@ -121,7 +104,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var irq in selectedRecipe.IngredientRecipeQuantity.OrderBy(x => x.Quantity))
+                            @foreach (var irq in selectedRecipe.IngredientRecipeQuantity)
                             {
                                 <tr>
                                     <td><MatTextField Label="Nom" @bind-Value="@irq.Ingredient.Name" /></td>
@@ -132,9 +115,7 @@
                                     <td><FtToggle @bind-Value="irq.Ingredient.IsOrganic" LabelWhenFalse="" LabelWhenTrue="Bio" /></td>
                                     <td><FtToggle @bind-Value="irq.Ingredient.IsAllergen" LabelWhenFalse="" LabelWhenTrue="Allergène" /></td>
                                     <td><MatTextField HelperText="A ajouter sur l'étiquette : origine viande (boeuf), aoc, aop ..." Label="Informations complémentaire" @bind-Value="@irq.Ingredient.ComplementaryInformations" /></td>
-                                    @*<td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>*@
-                                    <td>
-                                    </td>
+                                    <td><MatButton Type="button" OnClick="(e=> { EditSubIngredients(irq.Ingredient); })">@(irq.Ingredient.ChildsIngredients.Count()) sous ingrédients</MatButton></td>
                                     <td><MatButton Type="button" OnClick="@(e => { RemoveIngredient(irq); })">Retirer</MatButton></td>
 
                                 </tr>
@@ -153,13 +134,16 @@
     </EditForm>
 </FtDiv>
 
+<MatDialog @bind-IsOpen="@OpenSubIngredient">
+    <MatDialogTitle>Sous ingrédient de @selectedIngredient.Name</MatDialogTitle>
+    <MatDialogContent>
 
-
-
-
-
-
-
+    </MatDialogContent>
+    <MatDialogActions>
+        <MatButton Type="button" OnClick="@(e => { OpenSubIngredient = false; })">Annuler</MatButton>
+        <MatButton Type="submit">Sauvegarder</MatButton>
+    </MatDialogActions>
+</MatDialog>
 
 
 @code {
@@ -199,53 +183,21 @@
 
     #region Ingredient management
 
+    FtIngredientsSelector FtIngredientRecipe;
+
     List<Ingredient> Ingredients = new List<Ingredient>();
-
-    List<Ingredient> autoCompleteIngredientList
-    {
-        get
-        {
-            List<Ingredient> toReturn = new List<Ingredient>();
-            foreach (var ingredient in Ingredients)
-                if (!selectedRecipe.IngredientRecipeQuantity.Any(x => x.IngredientId == ingredient.Id))
-                    toReturn.Add(ingredient);
-            return toReturn;
-        }
-    }
-
-    public MatAutocompleteForm<Ingredient> AutoCompleteForm { get; set; }
-
-    void SelectedIngredientChanged(Ingredient ingredient)
-    {
-        AddIngredient(ingredient);
-    }
-
-    void IngredientKeyPressed(KeyboardEventArgs args)
-    {
-        if (args.Key == "Enter")
-        {
-            AddNewIngredientFromUserTyping();
-        }
-    }
-    void AddNewIngredientFromUserTyping()
-    {
-        if (!string.IsNullOrWhiteSpace(AutoCompleteForm.StringValue))
-        {
-            AddIngredient(new Ingredient() { Name = AutoCompleteForm.StringValue });
-        }
-    }
 
     void AddIngredient(Ingredient ingredient)
     {
         IngredientRecipeQuantity irq = new IngredientRecipeQuantity(ingredient, selectedRecipe);
         tempAddIrq.Add(irq);
-        AutoCompleteForm.StringValue = "";
     }
 
     void RemoveIngredient(IngredientRecipeQuantity irq)
     {
         tempRemoveIrq.Add(irq);
         selectedRecipe.IngredientRecipeQuantity.Remove(irq);
+        FtIngredientRecipe.RemoveIngredient(irq.Ingredient);
     }
 
     #endregion Ingredient management
@@ -266,9 +218,15 @@
 
     #region  IngredientSubIngredientOrder management
 
+    bool OpenSubIngredient = false;
+
+    Ingredient selectedIngredient = new Ingredient();
+    List<Ingredient> selectedIngredients = new List<Ingredient>();
+
+
     void EditSubIngredients(Ingredient ingredient)
     {
-
+        OpenSubIngredient = true;
     }
 
     #endregion IngredientSubIngredientOrder management
@@ -312,6 +270,8 @@
     }
     void Modify(Recipe recipe)
     {
+        selectedIngredients.Clear();
+        recipe.IngredientRecipeQuantity.ForEach(x => selectedIngredients.Add(x.Ingredient));
         selectedRecipe = recipe;
         SelectedImages = recipe.Pictures;
         OpenEdit = true;

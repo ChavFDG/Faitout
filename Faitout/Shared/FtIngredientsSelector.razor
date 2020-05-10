@@ -1,0 +1,86 @@
+﻿
+<div class="row">
+    <div class="col">
+        <MatAutocompleteForm @ref="AutoCompleteForm"
+                             Items="@autoCompleteIngredientList"
+                             TItem="Ingredient"
+                             ValueChanged="SelectedIngredientChanged"
+                             @onkeypress="IngredientKeyPressed"
+                             Label="Saisir un ingrédient"
+                             FullWidth="true">
+            <ItemTemplate Context="ingredient">
+                <div style="display: flex; flex-direction: row; width: 100%;">
+                    @ingredient.ToLongString()
+                </div>
+            </ItemTemplate>
+        </MatAutocompleteForm>
+    </div>
+    <div class="col-md-auto">
+        <MatFAB OnClick="@AddNewIngredientFromUserTyping" Type="button" Icon="@MatIconNames.Add" />
+    </div>
+</div>
+
+@code {
+
+    MatAutocompleteForm<Ingredient> AutoCompleteForm { get; set; }
+
+    [Parameter]
+    public Ingredient ParentIngredient { get; set; }
+
+    [Parameter]
+    public List<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
+
+    [Parameter]
+    public List<Ingredient> SelectedIngredients { get; set; } = new List<Ingredient>();
+
+    List<Ingredient> autoCompleteIngredientList
+    {
+        get
+        {
+            List<Ingredient> toReturn = new List<Ingredient>();
+            foreach (var ingredient in Ingredients)
+            {
+                if (ParentIngredient?.Id == ingredient.Id)
+                    continue;
+                if (!SelectedIngredients.Any(x => x.Id == ingredient.Id))
+                    toReturn.Add(ingredient);
+
+            }
+            return toReturn;
+        }
+    }
+
+    void SelectedIngredientChanged(Ingredient ingredient)
+    {
+        AddIngredient(ingredient);
+    }
+
+    void IngredientKeyPressed(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter")
+        {
+            AddNewIngredientFromUserTyping();
+        }
+    }
+    void AddNewIngredientFromUserTyping()
+    {
+        if (!string.IsNullOrWhiteSpace(AutoCompleteForm.StringValue))
+        {
+            AddIngredient(new Ingredient() { Name = AutoCompleteForm.StringValue });
+        }
+    }
+
+    void AddIngredient(Ingredient ingredient)
+    {
+        SelectedIngredients.Add(ingredient);
+        IngredientAdded.InvokeAsync(ingredient);
+        AutoCompleteForm.StringValue = "";
+    }
+
+    public void RemoveIngredient(Ingredient ingredient)
+    {
+        SelectedIngredients.Remove(ingredient);
+    }
+    [Parameter]
+    public EventCallback<Ingredient> IngredientAdded{ get; set; }
+}

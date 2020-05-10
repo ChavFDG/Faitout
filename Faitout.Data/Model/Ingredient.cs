@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Transactions;
 
 namespace Faitout.Data.Model
 {
@@ -12,6 +13,7 @@ namespace Faitout.Data.Model
         [Key]
         public Guid Id { get; set; } = Guid.NewGuid();
         [Display(Name = "Nom")]
+        [Required(ErrorMessage ="Veuillez saisir un nom pour l'ingrédient")]
         public string Name { get; set; }
 
         [Display(Name = "Informations complémentaire, marque ...")]
@@ -48,7 +50,33 @@ namespace Faitout.Data.Model
             clone.ComplementaryInformations = ComplementaryInformations;
             clone.IsOrganic = IsOrganic;
             clone.IsAllergen = IsAllergen;
+            foreach (var isio in ChildsIngredients)
+            {
+               new IngredientSubIngredientOrder(clone, isio.Child) { Order = isio.Order, Percentage = isio.Percentage };
+                
+            }
             return clone;
+        }
+
+        public bool Compare(Ingredient ingredient)
+        {
+            if (ingredient.Name != Name)
+                return false;
+            if (ingredient.ComplementaryInformations != ComplementaryInformations)
+                return false;
+            if (ingredient.IsOrganic != IsOrganic)
+                return false;
+            if (ingredient.IsAllergen != IsAllergen)
+                return false;
+            foreach (var isio in ChildsIngredients)
+            {
+                var child = ingredient.ChildsIngredients.FirstOrDefault(x => x.ChildId == isio.ChildId);
+                if (child == null)
+                    return false;
+                else if (!isio.Child.Compare(child.Child))
+                    return false;
+            }
+            return true;
         }
 
         public string ToLongString()

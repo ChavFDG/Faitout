@@ -3,9 +3,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">@Title</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => Close()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                @if (CloseButton)
+                {
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" @onclick="() => Close()">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                }
             </div>
             @ChildContent
         </div>
@@ -24,6 +27,9 @@
     private string ModalDisplay = "none;";
     private string ModalClass = "";
     private bool ShowBackdrop = false;
+
+    [Parameter]
+    public bool CloseButton{ get; set; }  =false;
 
     [Parameter]
     public string Title { get; set; }

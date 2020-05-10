@@ -33,6 +33,7 @@ namespace Faitout.Services
             if (!_context.Recipes.Any(x => x.Id == recipe.Id))
                 _context.Recipes.Add(recipe);
 
+            //Recipe Tag
             foreach (var rt in rtToRemove)
             {
                 if (_context.RecipesTags.Any(x => x.Id == rt.Id))
@@ -43,6 +44,8 @@ namespace Faitout.Services
                 if (!_context.RecipesTags.Any(x => x.Id == rt.Id))
                     _context.ChangeTracker.Entries<RecipeTag>().First(x => x.Entity.Id == rt.Id).State = EntityState.Added;
             }
+
+            //Ingredient recipe quantity
             foreach (var irq in irqToRemove)
             {
                 if (_context.IngredientsRecipesQuantities.Any(x => x.Id == irq.Id))
@@ -58,6 +61,22 @@ namespace Faitout.Services
                     _context.ChangeTracker.Entries<IngredientRecipeQuantity>().First(x => x.Entity.Id == irq.Id).State = EntityState.Added;
             }
 
+            //Sub ingredient Order
+            foreach (var isio in _context.ChangeTracker.Entries<IngredientSubIngredientOrder>())
+            {
+                if (isio.Entity.Parent == null)
+                    isio.State = EntityState.Deleted;
+                if (!_context.IngredientsSubIngredientsOrders.Any(x => x.Id == isio.Entity.Id)) ;
+                    isio.State = EntityState.Added;        
+            }
+
+            foreach(var ingredient in _context.ChangeTracker.Entries<Ingredient>())
+            {
+                var test = ingredient.GetDatabaseValues();
+                ingredient.State = EntityState.Added;
+            }
+
+            //Create new ingredients
             foreach (var ingredient in _context.ChangeTracker.Entries<Ingredient>().Where(x=>x.State == EntityState.Modified && recipe.IngredientRecipeQuantity.Any(irq=>irq.IngredientId == x.Entity.Id)))
             {
                 //If one ingredient value has been modified create a new one to don't brake the unique relation

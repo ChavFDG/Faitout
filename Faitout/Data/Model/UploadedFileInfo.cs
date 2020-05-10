@@ -10,7 +10,7 @@ namespace Faitout.Data.Model
 {
     public class UploadedFileInfo
     {
-        private static readonly string[] _validExtensions = { ".jpg", ".bmp", ".gif", ".png" }; //  etc
+        private static readonly string[] _validExtensions = { ".jpg", ".bmp", ".gif", ".png",".webp" }; //  etc
 
         public static bool IsImage(string fileName)
         {
