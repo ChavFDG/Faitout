@@ -61,19 +61,14 @@ namespace Faitout.Services
                     _context.ChangeTracker.Entries<IngredientRecipeQuantity>().First(x => x.Entity.Id == irq.Id).State = EntityState.Added;
             }
 
-            //Sub ingredient Order
-            foreach (var isio in _context.ChangeTracker.Entries<IngredientSubIngredientOrder>())
+            foreach (var ingredient in _context.ChangeTracker.Entries<IngredientSubIngredientOrder>().Where(x => x.State != EntityState.Unchanged))
             {
-                if (isio.Entity.Parent == null)
-                    isio.State = EntityState.Deleted;
-                if (!_context.IngredientsSubIngredientsOrders.Any(x => x.Id == isio.Entity.Id)) ;
-                    isio.State = EntityState.Added;        
+                var entity = ingredient.Entity;
             }
 
-            foreach(var ingredient in _context.ChangeTracker.Entries<Ingredient>())
+            foreach (var ingredient in _context.ChangeTracker.Entries<Ingredient>().Where(x => x.State != EntityState.Unchanged))
             {
-                var test = ingredient.GetDatabaseValues();
-                ingredient.State = EntityState.Added;
+                var entity = ingredient.Entity;
             }
 
             //Create new ingredients

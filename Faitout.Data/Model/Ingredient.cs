@@ -11,7 +11,7 @@ namespace Faitout.Data.Model
     public class Ingredient
     {
         [Key]
-        public Guid Id { get; set; } = Guid.NewGuid();
+        public Guid Id { get; set; }
         [Display(Name = "Nom")]
         [Required(ErrorMessage ="Veuillez saisir un nom pour l'ingrédient")]
         public string Name { get; set; }
@@ -52,13 +52,12 @@ namespace Faitout.Data.Model
             clone.IsAllergen = IsAllergen;
             foreach (var isio in ChildsIngredients)
             {
-               new IngredientSubIngredientOrder(clone, isio.Child) { Order = isio.Order, Percentage = isio.Percentage };
-                
+               new IngredientSubIngredientOrder(clone, isio.Child) { Order = isio.Order, Percentage = isio.Percentage };                
             }
             return clone;
         }
 
-        public bool Compare(Ingredient ingredient)
+        public bool CompareValues(Ingredient ingredient)
         {
             if (ingredient.Name != Name)
                 return false;
@@ -70,10 +69,10 @@ namespace Faitout.Data.Model
                 return false;
             foreach (var isio in ChildsIngredients)
             {
-                var child = ingredient.ChildsIngredients.FirstOrDefault(x => x.ChildId == isio.ChildId);
+                var child = ingredient.ChildsIngredients.FirstOrDefault(x => x.Child == isio.Child);
                 if (child == null)
                     return false;
-                else if (!isio.Child.Compare(child.Child))
+                else if (!isio.Child.CompareValues(child.Child))
                     return false;
             }
             return true;

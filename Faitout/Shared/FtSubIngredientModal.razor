@@ -79,9 +79,7 @@
     {
         clonedIngredient.ChildsIngredients.Remove(isio);
         isio.Parent = null;
-        isio.ParentId = null;
         isio.Child = null;
-        isio.ChildId = null;
     }
 
     void Up(IngredientSubIngredientOrder isio)
@@ -96,7 +94,6 @@
         isio.Order = isio.Order + 1;
     }
 
-
     void Save()
     {
         List<IngredientSubIngredientOrder> toReplace = new List<IngredientSubIngredientOrder>();
@@ -104,19 +101,17 @@
 
         foreach (var isio in ingredient.ChildsIngredients)
         {
-            var cloneIsio = clonedIngredient.ChildsIngredients.FirstOrDefault(x => x.ChildId == isio.ChildId);
+            var cloneIsio = clonedIngredient.ChildsIngredients.FirstOrDefault(x => x.Child == isio.Child);
             //Cloned in ingredient exist, if check values, if not remove
             if(cloneIsio != null)
             {
                 isio.Order = cloneIsio.Order;
                 isio.Percentage = cloneIsio.Percentage;
                 //Compare values
-                if(cloneIsio.Child.Compare(isio.Child))
+                if(cloneIsio.Child.CompareValues(isio.Child))
                 {
                     //Identic, remove clone
-                    clonedIngredient.ChildsIngredients.Remove(cloneIsio);
-                    isio.Child.Id = Guid.Empty;
-                    SetNulls(isio);
+                    SetNulls(cloneIsio);
                 }
                 else
                 {
@@ -133,12 +128,14 @@
         //Add
         foreach (var isio in clonedIngredient.ChildsIngredients)
         {
+            isio.Parent = ingredient;
+            isio.ParentId = ingredient.Id;
             ingredient.ChildsIngredients.Add(isio);
         }
         //Replace
         foreach(var clonedIsio in toReplace)
         {
-            var isio = ingredient.ChildsIngredients.FirstOrDefault(x => x.ChildId == clonedIsio.ChildId);
+            var isio = ingredient.ChildsIngredients.FirstOrDefault(x => x.Child == clonedIsio.Child);
             ingredient.ChildsIngredients.Remove(isio);
             SetNulls(isio);
             ingredient.ChildsIngredients.Add(isio);
@@ -150,12 +147,14 @@
             SetNulls(isio);
         }
 
+        clonedIngredient.ChildsIngredients.Clear();
+
         Modal.Close();
     }
 
     void SetNulls(IngredientSubIngredientOrder isio)
     {
-        isio.Id = Guid.Empty;
+        isio.Child.ParentsIngredients.Remove(isio);
         isio.Child = null;
         isio.ChildId = null;
         isio.Parent = null;
